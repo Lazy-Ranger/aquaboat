@@ -11,11 +11,7 @@ export class UserService {
   ) {}
   create = async (user: User) => {
     try {
-      console.log(this.userModel);
-      const newUser = await this.userModel.create({
-        ...user,
-      });
-
+      const newUser = await this.userModel.create(user);
       return newUser;
     } catch (err) {
       console.log(err);
