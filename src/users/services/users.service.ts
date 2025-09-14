@@ -2,72 +2,80 @@ import {
   Injectable,
   BadGatewayException,
   NotFoundException,
+  ConflictException,
+  InternalServerErrorException,
 } from '@nestjs/common';
 import { USER_MODEL, UserDocument } from '../schemas';
-import { Model } from 'mongoose';
+import { Model, FindQuery } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDTO, UpdateUserDTO } from '../dto';
 import { PaginableDto } from '../dto/paginable.dto';
 import * as moment from 'moment';
+import { IUser } from '../interfaces/user.interface';
+import { UserMapper } from '../application/mappers';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER_MODEL) private readonly userModel: Model<UserDocument>,
   ) {}
-  create = async (user: CreateUserDTO): Promise<boolean> => {
-    const userExists = await this.userModel.findOne({ email: user.email });
+
+  async create(createUserDto: CreateUserDTO): Promise<IUser> {
+    const userExists = await this.userModel.findOne({
+      email: createUserDto.email,
+    });
+
     if (userExists) {
-      throw new BadGatewayException('User already exists');
+      throw new ConflictException('User already exists');
     }
 
-    const newUser = await this.userModel.create(user);
-    return true;
-  };
+    const createdUser = await this.userModel.create(createUserDto);
+
+    return UserMapper.toUserDto(createdUser);
+  }
 
   getUserById = async (id: string) => {
     const user = await this.userModel.findById(id);
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
-    const data = {
-      id: user._id,
-      name: `${user?.firstName} ${user?.lastName ?? null}`,
-      email: user?.email,
-      phone: user?.phone,
-      gender: user?.gender,
-      picture: user?.picture,
-      status: user?.status,
-      address: {
-        line1: user?.address?.line1,
-        line2: user?.address?.line2,
-        city: user?.address?.city,
-        state: user?.address?.state,
-        postalCode: user?.address?.postalCode,
-        country: user?.address?.country,
-      },
-    };
-    return data;
+
+    return UserMapper.toUserDto(user);
   };
 
-  updateUser = async (id: string, user: UpdateUserDTO) => {
+  updateUser = async (id: string, updateUserDto: UpdateUserDTO) => {
     const userExists = await this.userModel.findById(id);
     if (!userExists) {
       throw new NotFoundException('User not found');
     }
-    const updatedUser = await this.userModel.findByIdAndUpdate(id, user, {
-      new: true,
-    });
-    return updatedUser;
+    const updatedUser = await this.userModel.findByIdAndUpdate(
+      id,
+      updateUserDto,
+      {
+        new: true,
+      },
+    );
+
+    if (!updatedUser) {
+      throw new InternalServerErrorException('Error updating user');
+    }
+
+    return UserMapper.toUserDto(updatedUser);
   };
 
   deleteUser = async (id: string) => {
-    const userExists = await this.userModel.findById(id);
-    if (!userExists) {
+    const user = await this.userModel.findById(id);
+
+    if (!user) {
       throw new NotFoundException('User not found');
     }
-    const deletedUser = await this.userModel.findByIdAndDelete(id);
-    return deletedUser;
+
+    user.deleteOne();
+
+    return {
+      id,
+    };
   };
 
   searchUsers = async (query: PaginableDto) => {
@@ -81,10 +89,10 @@ export class UserService {
       createdAt,
     } = query;
 
-    const conditions: any[] = [];
+    const findQuery: FindQuery<UserDocument> = {};
 
     if (name) {
-      conditions.push({
+      Object.assign(findQuery, {
         $or: [
           { firstName: { $regex: name, $options: 'i' } },
           { lastName: { $regex: name, $options: 'i' } },
@@ -125,8 +133,7 @@ export class UserService {
       this.userModel
         .find(findQuery)
         .skip((page - 1) * limit)
-        .limit(limit)
-        .exec(),
+        .limit(limit),
       this.userModel.countDocuments(findQuery),
     ]);
 

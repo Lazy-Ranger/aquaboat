@@ -9,7 +9,6 @@ import {
   Query,
   Delete,
 } from '@nestjs/common';
-import { User } from '../interfaces/user.interface';
 import { UserService } from '../services/users.service';
 import { CreateUserDTO, UpdateUserDTO } from '../dto';
 import { PaginableDto } from '../dto/paginable.dto';
@@ -18,7 +17,7 @@ import { PaginableDto } from '../dto/paginable.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
   @Post('/create')
-  create(@Body(ValidationPipe) createUserDto: CreateUserDTO, user: User) {
+  create(@Body(ValidationPipe) createUserDto: CreateUserDTO) {
     return this.userService.create(createUserDto);
   }
 

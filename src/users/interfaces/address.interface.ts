@@ -1,8 +1,8 @@
-export interface Address {
+export interface IAddress {
   line1: string;
-  line2: string;
+  line2?: string;
   city: string;
   state: string;
-  postalCode: number;
+  postalCode: string;
   country: string;
 }

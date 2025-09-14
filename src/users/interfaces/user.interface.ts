@@ -1,12 +1,15 @@
-import { Address } from './address.interface';
+import { UserStatus } from '../../constants/user.constants';
+import { IAddress } from './address.interface';
 
-export interface User {
+export interface IUser {
+  id: string;
   firstName: string;
-  lastName: string;
+  lastName?: string;
+  name: string;
   email: string;
   phone: string;
   gender: string;
-  picture: string;
-  status: string;
-  address?: Address;
+  picture?: string;
+  status: UserStatus;
+  address: IAddress;
 }

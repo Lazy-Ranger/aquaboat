@@ -1,4 +1,4 @@
-export enum USER_STATUS {
+export enum UserStatus {
   'ACTIVE' = 'ACTIVE',
   'INACTIVE' = 'INACTIVE',
   'BLOCKED' = 'BLOCKED',

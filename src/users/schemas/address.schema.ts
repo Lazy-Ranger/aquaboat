@@ -1,11 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, HydratedDocument } from 'mongoose';
 import { USER_COUNTRY } from '../../constants';
+import { IAddress } from '../interfaces/address.interface';
 
-export type AddressDocument = Address & Document;
+export type AddressDocument = HydratedDocument<AddressSchema>;
 
-@Schema({})
-export class Address {
+@Schema({
+  _id: false,
+})
+export class AddressSchema implements IAddress {
   @Prop({ required: true, min: 2, max: 100 })
   line1: string;
 
@@ -30,4 +33,4 @@ export class Address {
   country: USER_COUNTRY;
 }
 
-export const AddressSchema = SchemaFactory.createForClass(Address);
+export const AddressSchemaDef = SchemaFactory.createForClass(AddressSchema);

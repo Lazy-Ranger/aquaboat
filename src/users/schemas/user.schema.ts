@@ -1,54 +1,60 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { USER_GENDER, USER_STATUS } from '../../constants';
-import { Address, AddressSchema } from './address.schema';
+import { Document, HydratedDocument } from 'mongoose';
+import { USER_GENDER, UserStatus } from '../../constants';
+import { AddressDocument, AddressSchemaDef } from './address.schema';
+import { IUser } from '../interfaces/user.interface';
 
-export type UserDocument = User & Document;
+export type UserDocument = HydratedDocument<UserSchema>;
 
 @Schema({
   timestamps: true,
   collection: 'users',
 })
-export class User {
+export class UserSchema implements Omit<IUser, 'id'> {
+  name: string; // virtual
+
   @Prop({ required: true, min: 2, max: 50 })
-  firstName: string;
+  firstName!: string;
 
   @Prop({
     min: 2,
     max: 50,
   })
-  lastName: string;
+  lastName?: string;
 
   @Prop({ required: true, unique: true })
-  email: string;
+  email!: string;
 
   @Prop({
     required: true,
     set: (value: string) => value?.trim(),
   })
-  phone: string;
+  phone!: string;
 
   @Prop({ required: true, enum: Object.keys(USER_GENDER), type: String })
   gender: USER_GENDER;
 
   @Prop({})
-  picture: string;
+  picture?: string;
 
   @Prop({
-    required: true,
-    default: 'ACTIVE',
+    default: UserStatus.ACTIVE,
     type: String,
-    enum: Object.keys(USER_STATUS),
+    enum: Object.values(UserStatus),
   })
-  status: USER_STATUS;
+  status!: UserStatus;
 
   @Prop({
-    type: AddressSchema,
+    type: AddressSchemaDef,
     required: true,
   })
-  address?: Address;
+  address!: AddressDocument;
 }
 
-export const UserSchema = SchemaFactory.createForClass(User);
+export const UserSchemaDef = SchemaFactory.createForClass(UserSchema);
 
-export const USER_MODEL = User.name;
+UserSchemaDef.virtual('name', function (this: UserSchema) {
+  return `${this.firstName} ${this.lastName ?? null}`;
+});
+
+export const USER_MODEL = UserSchema.name;
