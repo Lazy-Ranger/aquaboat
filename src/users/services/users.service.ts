@@ -7,20 +7,22 @@ import { USER_MODEL, UserDocument } from '../schemas';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDTO, UpdateUserDTO } from '../dto';
+import { PaginableDto } from '../dto/paginable.dto';
+import * as moment from 'moment';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectModel(USER_MODEL) private readonly userModel: Model<UserDocument>,
   ) {}
-  create = async (user: CreateUserDTO): Promise<UserDocument> => {
+  create = async (user: CreateUserDTO): Promise<boolean> => {
     const userExists = await this.userModel.findOne({ email: user.email });
     if (userExists) {
       throw new BadGatewayException('User already exists');
     }
 
     const newUser = await this.userModel.create(user);
-    return newUser;
+    return true;
   };
 
   getUserById = async (id: string) => {
@@ -57,5 +59,83 @@ export class UserService {
       new: true,
     });
     return updatedUser;
+  };
+
+  deleteUser = async (id: string) => {
+    const userExists = await this.userModel.findById(id);
+    if (!userExists) {
+      throw new NotFoundException('User not found');
+    }
+    const deletedUser = await this.userModel.findByIdAndDelete(id);
+    return deletedUser;
+  };
+
+  searchUsers = async (query: PaginableDto) => {
+    const {
+      page = 1,
+      limit = 10,
+      name,
+      status,
+      gender,
+      country,
+      createdAt,
+    } = query;
+
+    const conditions: any[] = [];
+
+    if (name) {
+      conditions.push({
+        $or: [
+          { firstName: { $regex: name, $options: 'i' } },
+          { lastName: { $regex: name, $options: 'i' } },
+        ],
+      });
+    }
+
+    if (status) {
+      conditions.push({ status });
+    }
+
+    if (gender) {
+      conditions.push({ gender });
+    }
+
+    if (country) {
+      conditions.push({ 'address.country': country });
+    }
+
+    if (createdAt) {
+      const startOfDay = moment
+        .utc(createdAt, 'YYYY-MM-DD')
+        .startOf('day')
+        .toDate();
+      const endOfDay = moment
+        .utc(createdAt, 'YYYY-MM-DD')
+        .endOf('day')
+        .toDate();
+
+      conditions.push({
+        createdAt: { $gte: startOfDay, $lte: endOfDay },
+      });
+    }
+
+    const findQuery = conditions.length > 0 ? { $and: conditions } : {};
+
+    const [users, count] = await Promise.all([
+      this.userModel
+        .find(findQuery)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .exec(),
+      this.userModel.countDocuments(findQuery),
+    ]);
+
+    return {
+      data: users,
+      totalRecords: count,
+      totalPages: Math.ceil(count / limit),
+      limit: +limit,
+      page: +page,
+    };
   };
 }

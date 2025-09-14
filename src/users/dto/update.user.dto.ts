@@ -9,7 +9,7 @@ import {
   IsObject,
 } from 'class-validator';
 import { USER_GENDER } from '../../constants';
-import { Type, Exclude } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { AddressDto } from './create.user.dto';
 
 export class UpdateUserDTO {
