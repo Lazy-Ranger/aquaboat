@@ -4,19 +4,24 @@ import {
   IsString,
   IsOptional,
   IsEnum,
-  IsDateString,
+  ValidateNested,
+  IsObject,
+  IsNumber,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-import { USER_STATUS, USER_GENDER, USER_COUNTRY } from '../../constants';
+import { USER_STATUS, GENDER, COUNTRY } from '../constants';
+import { QueryAddressDto } from './address.dto';
 
 export class PaginableDto {
-  @IsNumberString()
+  @IsNumber()
   @IsNotEmpty()
+  @Type(() => Number)
   page: number;
 
-  @IsNumberString()
+  @IsNumber()
   @IsNotEmpty()
+  @Type(() => Number)
   limit: number;
 
   @IsString()
@@ -34,27 +39,18 @@ export class PaginableDto {
 
   @IsString()
   @IsOptional()
-  @IsEnum(Object.keys(USER_GENDER), {
+  @IsEnum(Object.keys(GENDER), {
     message:
       'Gender must be one of the following values : ' +
-      Object.keys(USER_GENDER).join(', '),
+      Object.keys(GENDER).join(', '),
   })
   gender?: string;
 
-  @IsString()
-  @IsOptional()
-  state?: string;
-
-  @IsString()
-  @IsOptional()
-  @IsEnum(Object.keys(USER_COUNTRY), {
-    message:
-      'Country must be one of the following values : ' +
-      Object.keys(USER_COUNTRY).join(', '),
-  })
-  country?: string;
-
   @IsOptional()
   @Type(() => Date)
-  createdAt?: string;
+  createdAt?: Date;
+
+  @IsOptional()
+  @IsString()
+  filter: string;
 }

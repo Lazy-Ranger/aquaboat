@@ -5,8 +5,8 @@ import {
   ConflictException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { USER_MODEL, UserDocument } from '../schemas';
-import { Model, FindQuery } from 'mongoose';
+import { USER_MODEL, UserDocument } from '../infra/db/schemas';
+import { Model, FilterQuery } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDTO, UpdateUserDTO } from '../dto';
 import { PaginableDto } from '../dto/paginable.dto';
@@ -34,7 +34,7 @@ export class UserService {
     return UserMapper.toUserDto(createdUser);
   }
 
-  getUserById = async (id: string) => {
+  async getUserById(id: string) {
     const user = await this.userModel.findById(id);
 
     if (!user) {
@@ -42,9 +42,9 @@ export class UserService {
     }
 
     return UserMapper.toUserDto(user);
-  };
+  }
 
-  updateUser = async (id: string, updateUserDto: UpdateUserDTO) => {
+  async updateUser(id: string, updateUserDto: UpdateUserDTO) {
     const userExists = await this.userModel.findById(id);
     if (!userExists) {
       throw new NotFoundException('User not found');
@@ -62,9 +62,9 @@ export class UserService {
     }
 
     return UserMapper.toUserDto(updatedUser);
-  };
+  }
 
-  deleteUser = async (id: string) => {
+  async deleteUser(id: string) {
     const user = await this.userModel.findById(id);
 
     if (!user) {
@@ -76,40 +76,43 @@ export class UserService {
     return {
       id,
     };
-  };
+  }
 
-  searchUsers = async (query: PaginableDto) => {
+  async searchUsers(query: any) {
     const {
       page = 1,
       limit = 10,
       name,
       status,
       gender,
-      country,
       createdAt,
+      address,
     } = query;
 
-    const findQuery: FindQuery<UserDocument> = {};
+    const findQuery: FilterQuery<UserDocument> = {};
 
+    // Search by name using $or
     if (name) {
-      Object.assign(findQuery, {
-        $or: [
-          { firstName: { $regex: name, $options: 'i' } },
-          { lastName: { $regex: name, $options: 'i' } },
-        ],
-      });
+      findQuery.$or = [
+        { firstName: { $regex: name, $options: 'i' } },
+        { lastName: { $regex: name, $options: 'i' } },
+      ];
     }
 
+    // Filter by status
     if (status) {
-      conditions.push({ status });
+      findQuery.status = status;
     }
 
+    // Filter by gender
     if (gender) {
-      conditions.push({ gender });
+      findQuery.gender = gender;
     }
 
-    if (country) {
-      conditions.push({ 'address.country': country });
+    // Filter by country
+    if (address?.country) {
+      const country = address.country.toUpperCase();
+      findQuery['address.country'] = country;
     }
 
     if (createdAt) {
@@ -122,13 +125,10 @@ export class UserService {
         .endOf('day')
         .toDate();
 
-      conditions.push({
-        createdAt: { $gte: startOfDay, $lte: endOfDay },
-      });
+      findQuery.createdAt = { $gte: startOfDay, $lte: endOfDay };
     }
 
-    const findQuery = conditions.length > 0 ? { $and: conditions } : {};
-
+    // Execute the query
     const [users, count] = await Promise.all([
       this.userModel
         .find(findQuery)
@@ -144,5 +144,5 @@ export class UserService {
       limit: +limit,
       page: +page,
     };
-  };
+  }
 }

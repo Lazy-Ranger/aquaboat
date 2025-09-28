@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, HydratedDocument } from 'mongoose';
-import { USER_COUNTRY } from '../../constants';
-import { IAddress } from '../interfaces/address.interface';
+import { HydratedDocument } from 'mongoose';
+import { COUNTRY } from '../../../constants';
+import { IAddress } from '../../../interfaces/address.interface';
+import { IsIn } from 'class-validator';
 
 export type AddressDocument = HydratedDocument<AddressSchema>;
 
@@ -27,10 +28,9 @@ export class AddressSchema implements IAddress {
   @Prop({
     type: String,
     required: true,
-    enum: Object.keys(USER_COUNTRY),
     set: (value: string) => value?.toUpperCase(),
   })
-  country: USER_COUNTRY;
+  country: string;
 }
 
 export const AddressSchemaDef = SchemaFactory.createForClass(AddressSchema);

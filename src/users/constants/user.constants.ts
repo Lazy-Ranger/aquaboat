@@ -1,0 +1,21 @@
+export enum USER_STATUS {
+  'ACTIVE' = 'ACTIVE',
+  'INACTIVE' = 'INACTIVE',
+  'BLOCKED' = 'BLOCKED',
+  'DELETED' = 'DELETED',
+}
+
+export const COUNTRY = {
+  AFGHANISTAN: 'AFGHANISTAN',
+  INDIA: 'INDIA',
+  CHINA: 'CHINA',
+  UNITED_STATES: 'UNITED_STATES',
+  CANADA: 'CANADA',
+  AUSTRALIA: 'AUSTRALIA',
+};
+
+export enum GENDER {
+  'MALE' = 'MALE',
+  'FEMALE' = 'FEMALE',
+  'OTHER' = 'OTHER',
+}

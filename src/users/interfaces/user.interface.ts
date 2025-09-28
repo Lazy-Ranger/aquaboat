@@ -1,4 +1,4 @@
-import { UserStatus } from '../../constants/user.constants';
+import { USER_STATUS } from '../constants/user.constants';
 import { IAddress } from './address.interface';
 
 export interface IUser {
@@ -10,6 +10,6 @@ export interface IUser {
   phone: string;
   gender: string;
   picture?: string;
-  status: UserStatus;
+  status: USER_STATUS;
   address: IAddress;
 }

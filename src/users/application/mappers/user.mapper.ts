@@ -1,5 +1,5 @@
 import { IUser } from 'src/users/interfaces/user.interface';
-import { UserDocument } from 'src/users/schemas';
+import { UserDocument } from '../../infra/db/schemas';
 import { AddressMapper } from './address.mapper';
 
 export class UserMapper {
@@ -9,11 +9,11 @@ export class UserMapper {
       firstName: user.firstName,
       lastName: user?.lastName,
       name: user.name,
-      email: user?.email,
+      email: user.email,
       phone: user?.phone,
-      gender: user?.gender,
+      gender: user.gender,
       picture: user?.picture,
-      status: user?.status,
+      status: user.status,
       address: AddressMapper.toAddressDto(user.address),
     };
   }

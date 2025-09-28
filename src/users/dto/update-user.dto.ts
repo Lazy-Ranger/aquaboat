@@ -8,9 +8,9 @@ import {
   ValidateNested,
   IsObject,
 } from 'class-validator';
-import { USER_GENDER } from '../../constants';
+import { GENDER } from '../constants';
 import { Type } from 'class-transformer';
-import { AddressDto } from './create.user.dto';
+import { UpdateAddressDto } from './address.dto';
 
 export class UpdateUserDTO {
   @IsString()
@@ -31,14 +31,14 @@ export class UpdateUserDTO {
 
   @IsString()
   @IsNotEmpty()
-  @IsEnum(Object.keys(USER_GENDER))
+  @IsEnum(Object.keys(GENDER))
   gender: string;
 
   @IsString()
   picture: string;
 
   @ValidateNested()
-  @Type(() => AddressDto)
+  @Type(() => UpdateAddressDto)
   @IsObject()
-  address: AddressDto;
+  address: UpdateAddressDto;
 }

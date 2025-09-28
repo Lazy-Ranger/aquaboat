@@ -8,6 +8,7 @@ import {
   Put,
   Query,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { UserService } from '../services/users.service';
 import { CreateUserDTO, UpdateUserDTO } from '../dto';
@@ -16,13 +17,21 @@ import { PaginableDto } from '../dto/paginable.dto';
 @Controller('/users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
-  @Post('/create')
-  create(@Body(ValidationPipe) createUserDto: CreateUserDTO) {
+  @Post('/')
+  create(@Body() createUserDto: CreateUserDTO) {
     return this.userService.create(createUserDto);
   }
 
   @Get('/search')
-  getUsers(@Query(ValidationPipe) query: PaginableDto) {
+  getUsers(@Query() query: PaginableDto, @Req() req) {
+    console.log(JSON.parse(query.filter));
+
+    try  {
+      JSON.parse(query.filter);
+    } catch(err) {
+      return {}
+    }
+
     const data = this.userService.searchUsers(query);
     return data;
   }
@@ -33,10 +42,7 @@ export class UserController {
   }
 
   @Put('/:id')
-  updateUser(
-    @Param('id') id: string,
-    @Body(ValidationPipe) updateUserDto: UpdateUserDTO,
-  ) {
+  updateUser(@Param('id') id: string, @Body() updateUserDto: UpdateUserDTO) {
     return this.userService.updateUser(id, updateUserDto);
   }
 
