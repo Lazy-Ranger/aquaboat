@@ -1,5 +1,5 @@
-import { IAddress } from 'src/users/interfaces/address.interface';
-import { AddressDocument } from '../../infra/db/schemas';
+import { IAddress } from "../../contracts";
+import { AddressDocument } from "../../infra/db/mongo/schemas";
 
 export class AddressMapper {
   static toAddressDto(address: AddressDocument): IAddress {

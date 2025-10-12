@@ -1,13 +1,13 @@
+import { PartialType } from "@nestjs/mapped-types";
 import {
-  IsString,
-  IsNotEmpty,
-  MinLength,
-  MaxLength,
   IsIn,
+  IsNotEmpty,
   IsOptional,
-} from 'class-validator';
-import { COUNTRY } from '../constants';
-import { PartialType } from '@nestjs/mapped-types';
+  IsString,
+  MaxLength,
+  MinLength,
+} from "class-validator";
+import { COUNTRY } from "../../../contracts";
 
 export class CreateAddressDto {
   @IsString()
@@ -16,10 +16,11 @@ export class CreateAddressDto {
   @MaxLength(100)
   line1: string;
 
+  @IsOptional()
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  line2: string;
+  line2?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -41,18 +42,8 @@ export class CreateAddressDto {
 
   @IsString()
   @IsNotEmpty()
-  @IsIn(Object.values(COUNTRY), {
-    message:
-      'Country must be one of the following values : ' +
-      Object.values(COUNTRY).join(', '),
-  })
+  @IsIn(COUNTRY)
   country: string;
 }
 
 export class UpdateAddressDto extends PartialType(CreateAddressDto) {}
-
-export class QueryAddressDto {
-  @IsOptional()
-  @IsString()
-  city?: string;
-}

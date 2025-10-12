@@ -1,6 +1,6 @@
-import { IUser } from 'src/users/interfaces/user.interface';
-import { UserDocument } from '../../infra/db/schemas';
-import { AddressMapper } from './address.mapper';
+import { IUser } from "../../contracts";
+import { UserDocument } from "../../infra/db/mongo/schemas";
+import { AddressMapper } from "./address.mapper";
 
 export class UserMapper {
   static toUserDto(user: UserDocument): IUser {
@@ -15,6 +15,12 @@ export class UserMapper {
       picture: user?.picture,
       status: user.status,
       address: AddressMapper.toAddressDto(user.address),
+      createdAt: user.createdAt,
+      updatedAt: user.updatedAt,
     };
+  }
+
+  static toUserDtos(users: UserDocument[]): IUser[] {
+    return users.map(UserMapper.toUserDto);
   }
 }

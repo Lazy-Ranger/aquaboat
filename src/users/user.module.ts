@@ -1,12 +1,14 @@
-import { Module } from '@nestjs/common';
-import { UserController } from './controllers/user.controller';
-import { UserService } from './services/users.service';
-import { MongooseModuleModel } from '../users/infra/db/user-mongo.module';
+import { Module, Provider } from "@nestjs/common";
+import { UserService } from "./application/services/user.service";
+import { UserController } from "./entry-points/http/controllers/user.controller";
+import { UserDatabaseModule } from "./infra/db/user-database.module";
+
+const PROVIDERS: Provider[] = [UserService];
 
 @Module({
-  imports: [MongooseModuleModel],
+  imports: [UserDatabaseModule],
   controllers: [UserController],
-  providers: [UserService],
-  exports: [UserService],
+  providers: PROVIDERS,
+  exports: PROVIDERS,
 })
 export class UserModule {}

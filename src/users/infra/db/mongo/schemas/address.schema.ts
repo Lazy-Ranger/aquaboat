@@ -1,8 +1,6 @@
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { HydratedDocument } from 'mongoose';
-import { COUNTRY } from '../../../constants';
-import { IAddress } from '../../../interfaces/address.interface';
-import { IsIn } from 'class-validator';
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { HydratedDocument } from "mongoose";
+import { IAddress } from "../../../../contracts";
 
 export type AddressDocument = HydratedDocument<AddressSchema>;
 
@@ -28,7 +26,6 @@ export class AddressSchema implements IAddress {
   @Prop({
     type: String,
     required: true,
-    set: (value: string) => value?.toUpperCase(),
   })
   country: string;
 }

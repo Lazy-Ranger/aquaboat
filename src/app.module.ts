@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
-import { UserModule } from './users/user.module';
-import configuration from './config/configuration';
-import { DatabaseModule } from './infra/mongoose/database.module';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
+import configuration from "./config/configuration";
+import { AppInfraModule } from "./infra/app-infra.module";
+import { UserModule } from "./users/user.module";
 
 @Module({
   imports: [
@@ -12,7 +12,7 @@ import { DatabaseModule } from './infra/mongoose/database.module';
       expandVariables: true,
       isGlobal: true,
     }),
-    DatabaseModule,
+    AppInfraModule,
     UserModule,
   ],
   controllers: [],
