@@ -1,7 +1,8 @@
-import { Type } from 'class-transformer';
-import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Type } from "class-transformer";
+import { IsNumber, IsOptional, IsString } from "class-validator";
+import { IUserSearchParams } from "../../../contracts";
 
-export class SearchUsersDto {
+export class SearchUsersDto implements IUserSearchParams {
   @IsOptional()
   @IsNumber()
   @Type(() => Number)
@@ -14,5 +15,5 @@ export class SearchUsersDto {
 
   @IsOptional()
   @IsString()
-  filter: string;
+  filter?: string;
 }

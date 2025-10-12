@@ -7,9 +7,13 @@ import {
   MaxLength,
   MinLength,
 } from "class-validator";
-import { COUNTRY } from "../../../contracts";
+import {
+  COUNTRY,
+  IAddressCreateParams,
+  IAddressUpdateParams,
+} from "../../../contracts";
 
-export class CreateAddressDto {
+export class CreateAddressDto implements IAddressCreateParams {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
@@ -46,4 +50,6 @@ export class CreateAddressDto {
   country: string;
 }
 
-export class UpdateAddressDto extends PartialType(CreateAddressDto) {}
+export class UpdateAddressDto
+  extends PartialType(CreateAddressDto)
+  implements IAddressUpdateParams {}

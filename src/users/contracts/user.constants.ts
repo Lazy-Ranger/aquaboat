@@ -19,3 +19,8 @@ export enum Gender {
   "FEMALE" = "FEMALE",
   "OTHER" = "OTHER",
 }
+
+export enum RetrieveUserBy {
+  ID = "id",
+  EMAIL = "email",
+}

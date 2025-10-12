@@ -5,3 +5,9 @@ export interface IOffsetPaginationResult<T> {
   totalPages: number;
   totalRecords: number;
 }
+
+export interface IUserSearchParams {
+  page?: number;
+  limit?: number;
+  filter?: string; // JSON stringified IUserSearchFilter
+}

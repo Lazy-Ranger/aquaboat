@@ -1,80 +1,76 @@
-import {
-  ConflictException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from "@nestjs/common";
-import { InjectModel } from "@nestjs/mongoose";
-import * as moment from "moment";
-import { FilterQuery, Model } from "mongoose";
+import { Inject, Injectable } from "@nestjs/common";
 import {
   IOffsetPaginationResult,
   IUser,
-  IUserSearchFilter,
+  IUserCreateParams,
+  IUserSearchParams,
+  IUserUpdateParams,
+  RetrieveUserBy,
 } from "../../contracts";
-import { CreateUserDto, UpdateUserDto } from "../../entry-points/http/dtos";
-import { SearchUsersDto } from "../../entry-points/http/dtos/search-users.dto";
-import { USER_MODEL, UserDocument } from "../../infra/db/mongo/schemas";
+import { User } from "../../domain/entities";
+import { IUserRepo } from "../../domain/repos";
+import {
+  UserAlreadyExistsError,
+  UserNotFoundError,
+  UserUpdateFailedError,
+} from "../../errors";
+import { USER_REPO } from "../../tokens";
 import { UserMapper } from "../mappers";
 
 @Injectable()
 export class UserService {
-  constructor(
-    @InjectModel(USER_MODEL) private readonly userModel: Model<UserDocument>,
-  ) {}
+  constructor(@Inject(USER_REPO) private readonly userRepo: IUserRepo) {}
 
-  async create(createUserDto: CreateUserDto): Promise<IUser> {
-    const userExists = await this.userModel.findOne({
-      email: createUserDto.email,
-    });
+  async create(params: IUserCreateParams): Promise<IUser> {
+    const userExists = await this.userRepo.findByEmail(params.email);
 
     if (userExists) {
-      throw new ConflictException("User already exists");
+      throw new UserAlreadyExistsError(params.email, userExists.id);
     }
 
-    const createdUser = await this.userModel.create(createUserDto);
+    const user = new User(params);
+
+    const createdUser = await this.userRepo.create(user);
 
     return UserMapper.toUserDto(createdUser);
   }
 
   async getUserById(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userRepo.findById(id);
 
     if (!user) {
-      throw new NotFoundException("User not found");
+      throw new UserNotFoundError(id, RetrieveUserBy.ID);
     }
 
     return UserMapper.toUserDto(user);
   }
 
-  async updateUser(id: string, updateUserDto: UpdateUserDto) {
-    const userExists = await this.userModel.findById(id);
-    if (!userExists) {
-      throw new NotFoundException("User not found");
+  async updateUser(id: string, params: IUserUpdateParams) {
+    const user = await this.userRepo.findById(id);
+
+    if (!user) {
+      throw new UserNotFoundError(id, RetrieveUserBy.ID);
     }
-    const updatedUser = await this.userModel.findByIdAndUpdate(
-      id,
-      updateUserDto,
-      {
-        new: true,
-      },
-    );
+
+    Object.assign(user, params);
+
+    const updatedUser = await this.userRepo.updateById(id, user);
 
     if (!updatedUser) {
-      throw new InternalServerErrorException("Error updating user");
+      throw new UserUpdateFailedError(user.id);
     }
 
     return UserMapper.toUserDto(updatedUser);
   }
 
   async deleteUser(id: string) {
-    const user = await this.userModel.findById(id);
+    const user = await this.userRepo.findById(id);
 
     if (!user) {
-      throw new NotFoundException("User not found");
+      throw new UserNotFoundError(id, RetrieveUserBy.ID);
     }
 
-    user.deleteOne();
+    await this.userRepo.deleteById(id);
 
     return {
       id,
@@ -82,70 +78,13 @@ export class UserService {
   }
 
   async searchUsers(
-    query: SearchUsersDto,
+    params: IUserSearchParams,
   ): Promise<IOffsetPaginationResult<IUser>> {
-    const { page = 1, limit = 10 } = query;
-
-    const { name, status, gender, address, createdAt } = JSON.parse(
-      query.filter || "{}",
-    ) as IUserSearchFilter;
-
-    const findQuery: FilterQuery<UserDocument> = {};
-
-    // Search by name using $or
-    if (name) {
-      findQuery.$or = [
-        { firstName: { $regex: name, $options: "i" } },
-        { lastName: { $regex: name, $options: "i" } },
-      ];
-    }
-
-    // Filter by status
-    if (status) {
-      findQuery.status = status;
-    }
-
-    // Filter by gender
-    if (gender) {
-      findQuery.gender = gender;
-    }
-
-    // Filter by country
-    if (address?.country) {
-      const country = address.country.toUpperCase();
-      findQuery["address.country"] = country;
-    }
-
-    if (createdAt) {
-      const startOfDay = moment
-        .utc(createdAt, "YYYY-MM-DD")
-        .startOf("day")
-        .toDate();
-      const endOfDay = moment
-        .utc(createdAt, "YYYY-MM-DD")
-        .endOf("day")
-        .toDate();
-
-      Object.assign(findQuery, {
-        createdAt: { $gte: startOfDay, $lte: endOfDay },
-      });
-    }
-
-    // Execute the query
-    const [users, count] = await Promise.all([
-      this.userModel
-        .find(findQuery)
-        .skip((page - 1) * limit)
-        .limit(limit),
-      this.userModel.countDocuments(findQuery),
-    ]);
+    const users = await this.userRepo.searchUsers(params);
 
     return {
-      data: UserMapper.toUserDtos(users),
-      totalRecords: count,
-      totalPages: Math.ceil(count / limit),
-      limit: +limit,
-      page: +page,
+      ...users,
+      data: users.data.map(UserMapper.toUserDto),
     };
   }
 }

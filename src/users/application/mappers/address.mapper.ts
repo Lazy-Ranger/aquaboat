@@ -1,8 +1,8 @@
 import { IAddress } from "../../contracts";
-import { AddressDocument } from "../../infra/db/mongo/schemas";
+import { Address } from "../../domain/value-objects";
 
 export class AddressMapper {
-  static toAddressDto(address: AddressDocument): IAddress {
+  static toAddressDto(address: Address): IAddress {
     return {
       line1: address.line1,
       line2: address?.line2,

@@ -12,10 +12,10 @@ import {
   MinLength,
   ValidateNested,
 } from "class-validator";
-import { Gender } from "../../../contracts";
+import { Gender, IUserCreateParams } from "../../../contracts";
 import { CreateAddressDto } from "./address.dto";
 
-export class CreateUserDto {
+export class CreateUserDto implements IUserCreateParams {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)

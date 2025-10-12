@@ -5,15 +5,13 @@ import { AddressDocument, AddressSchemaDef } from "./address.schema";
 
 export type UserDocument = HydratedDocument<UserSchema>;
 
-type IUserPersistence = Omit<IUser, "id">;
+type IUserPersistence = Omit<IUser, "id" | "name">;
 
 @Schema({
   timestamps: true,
   collection: "users",
 })
 export class UserSchema implements IUserPersistence {
-  name: string; // virtual
-
   @Prop({ required: true, min: 2, max: 50 })
   firstName!: string;
 
@@ -38,9 +36,9 @@ export class UserSchema implements IUserPersistence {
   picture?: string;
 
   @Prop({
-    default: UserStatus.ACTIVE,
+    required: true,
     type: String,
-    enum: Object.values(UserStatus),
+    enum: UserStatus,
   })
   status!: UserStatus;
 
@@ -56,9 +54,5 @@ export class UserSchema implements IUserPersistence {
 }
 
 export const UserSchemaDef = SchemaFactory.createForClass(UserSchema);
-
-UserSchemaDef.virtual("name", function (this: UserSchema) {
-  return `${this.firstName} ${this.lastName ?? ""}`;
-});
 
 export const USER_MODEL = UserSchema.name;

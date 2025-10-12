@@ -9,7 +9,7 @@ export class MongooseConfigService implements MongooseOptionsFactory {
 
   createMongooseOptions() {
     return {
-      uri: this.config.get<string>("DATABASE.url"),
+      uri: this.config.get<string>("database.url"),
     };
   }
 }

@@ -1,9 +1,9 @@
 import { IUser } from "../../contracts";
-import { UserDocument } from "../../infra/db/mongo/schemas";
+import { User } from "../../domain/entities";
 import { AddressMapper } from "./address.mapper";
 
 export class UserMapper {
-  static toUserDto(user: UserDocument): IUser {
+  static toUserDto(user: User): IUser {
     return {
       id: user.id,
       firstName: user.firstName,
@@ -20,7 +20,7 @@ export class UserMapper {
     };
   }
 
-  static toUserDtos(users: UserDocument[]): IUser[] {
+  static toUserDtos(users: User[]): IUser[] {
     return users.map(UserMapper.toUserDto);
   }
 }

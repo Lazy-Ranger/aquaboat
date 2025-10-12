@@ -1,4 +1,4 @@
-export * from "./address.interface";
+export * from "./address.types";
 export * from "./pagination.types";
 export * from "./user.constants";
-export * from "./user.interface";
+export * from "./user.types";
