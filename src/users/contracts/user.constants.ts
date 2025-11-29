@@ -24,3 +24,8 @@ export enum RetrieveUserBy {
   ID = "id",
   EMAIL = "email",
 }
+
+export enum Provider {
+  "GOOGLE" = "GOOGLE",
+  "PASSWORD" = "PASSWORD",
+}

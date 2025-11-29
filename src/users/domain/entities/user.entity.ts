@@ -1,5 +1,5 @@
 import { generateId } from "../../../helpers";
-import { Gender, IUser, UserStatus } from "../../contracts";
+import { Gender, IUser, Provider, UserStatus } from "../../contracts";
 import { Address } from "../value-objects/address.vo";
 
 export type IUserProps = Omit<
@@ -35,6 +35,14 @@ export class User implements IUser {
 
   updatedAt!: Date;
 
+  password!: string;
+
+  provider!: Provider;
+
+  providerUserId?: string;
+
+  authId: string;
+
   constructor(props: IUserProps) {
     this.id = props.id ?? generateId();
     this.firstName = props.firstName;
@@ -47,6 +55,10 @@ export class User implements IUser {
     this.address = new Address(props.address);
     this.createdAt = props.createdAt ?? new Date();
     this.updatedAt = props.updatedAt ?? new Date();
+    this.password = props.password;
+    this.provider = props.provider;
+    this.providerUserId = props.providerUserId;
+    this.authId = `${this.provider}|${this.id}`;
   }
 
   get name(): string {

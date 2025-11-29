@@ -17,6 +17,10 @@ export class UserMapper {
       address: AddressMapper.toAddressDto(user.address),
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
+      password: user.password,
+      provider: user.provider,
+      providerUserId: user.providerUserId,
+      authId: user.authId,
     };
   }
 

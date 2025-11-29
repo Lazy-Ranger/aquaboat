@@ -12,7 +12,7 @@ import {
   MinLength,
   ValidateNested,
 } from "class-validator";
-import { Gender, IUserCreateParams } from "../../../contracts";
+import { Gender, IUserCreateParams, Provider } from "../../../contracts";
 import { CreateAddressDto } from "./address.dto";
 
 export class CreateUserDto implements IUserCreateParams {
@@ -51,4 +51,23 @@ export class CreateUserDto implements IUserCreateParams {
   @ValidateNested()
   @IsObject()
   address: CreateAddressDto;
+
+  @IsString()
+  @IsOptional()
+  @MinLength(1)
+  @MaxLength(30)
+  password: string;
+
+  @IsString()
+  @IsNotEmpty()
+  @IsEnum(Provider)
+  provider: Provider;
+
+  @IsString()
+  @IsOptional()
+  providerUserId: string;
+
+  @IsString()
+  @IsOptional()
+  authId: string;
 }

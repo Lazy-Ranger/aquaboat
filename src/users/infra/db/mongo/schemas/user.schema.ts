@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { Gender, IUser, UserStatus } from "../../../../contracts";
+import { Gender, IUser, Provider, UserStatus } from "../../../../contracts";
 import { AddressDocument, AddressSchemaDef } from "./address.schema";
 
 export type UserDocument = HydratedDocument<UserSchema>;
@@ -47,6 +47,15 @@ export class UserSchema implements IUserPersistence {
     required: true,
   })
   address!: AddressDocument;
+
+  @Prop({ min: 1, max: 30 })
+  password!: string;
+
+  @Prop({ required: true, enum: Provider, type: String })
+  provider!: Provider;
+
+  @Prop({ required: true })
+  authId!: string;
 
   readonly createdAt!: Date;
 

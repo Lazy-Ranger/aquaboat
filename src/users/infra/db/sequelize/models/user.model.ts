@@ -10,7 +10,7 @@ import {
   Table,
   Unique,
 } from "sequelize-typescript";
-import { Gender, IUser, UserStatus } from "../../../../contracts";
+import { Gender, IUser, Provider, UserStatus } from "../../../../contracts";
 import { AddressModel } from "./address.model";
 
 @Table({
@@ -67,6 +67,23 @@ export class UserModel extends Model<IUser> {
   @Column(DataType.INTEGER)
   addressId!: number;
 
-  @BelongsTo(() => AddressModel)
   address!: AddressModel;
+
+  @BelongsTo(() => AddressModel)
+  @Column(DataType.STRING)
+  password!: string;
+
+  @AllowNull(false)
+  @Column({
+    type: DataType.ENUM(...Object.values(Provider)),
+  })
+  provider!: Provider;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  providerUserId?: string;
+
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  authId!: string;
 }

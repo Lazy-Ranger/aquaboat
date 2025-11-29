@@ -1,5 +1,5 @@
 import { IAddress, IAddressUpdateParams } from "./address.types";
-import { Gender, UserStatus } from "./user.constants";
+import { Gender, Provider, UserStatus } from "./user.constants";
 
 export interface IUser {
   id: string;
@@ -14,6 +14,10 @@ export interface IUser {
   address: IAddress;
   createdAt: Date;
   updatedAt: Date;
+  password: string;
+  provider: Provider;
+  providerUserId?: string;
+  authId: string;
 }
 
 export type IUserSearchFilter = Pick<
