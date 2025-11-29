@@ -11,7 +11,13 @@ import {
   Put,
   Query,
 } from "@nestjs/common";
-import { UserService } from "../../../application/services";
+// import { UserService } from "../../../application/services";
+import {
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  RetrieveUserUseCase,
+  UpdateUserUseCase,
+} from "../../../application/use-cases";
 import {
   UserAlreadyExistsError,
   UserNotFoundError,
@@ -21,12 +27,17 @@ import { CreateUserDto, SearchUsersDto, UpdateUserDto } from "../dtos";
 
 @Controller("/users")
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly createUserUseCase: CreateUserUseCase,
+    private readonly retrieveUserUseCase: RetrieveUserUseCase,
+    private readonly updateUserUseCase: UpdateUserUseCase,
+    private readonly deleteUserUseCase: DeleteUserUseCase,
+  ) {}
 
   @Post()
   async create(@Body() createUserDto: CreateUserDto) {
     try {
-      return await this.userService.create(createUserDto);
+      return await this.createUserUseCase.create(createUserDto);
     } catch (err) {
       if (err instanceof UserAlreadyExistsError) {
         throw new ConflictException(err);
@@ -36,13 +47,13 @@ export class UserController {
 
   @Get("search")
   async getUsers(@Query() query: SearchUsersDto) {
-    return await this.userService.searchUsers(query);
+    return await this.retrieveUserUseCase.searchUsers(query);
   }
 
   @Get(":id")
   async getUserById(@Param("id") id: string) {
     try {
-      return await this.userService.getUserById(id);
+      return await this.retrieveUserUseCase.getUserById(id);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -56,7 +67,7 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     try {
-      return await this.userService.updateUser(id, updateUserDto);
+      return await this.updateUserUseCase.updateUser(id, updateUserDto);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -69,7 +80,7 @@ export class UserController {
   @Delete(":id")
   async deleteUser(@Param("id") id: string) {
     try {
-      return await this.userService.deleteUser(id);
+      return await this.deleteUserUseCase.deleteUser(id);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);

@@ -1,8 +1,18 @@
 import { Module } from "@nestjs/common";
 import { UserDatabaseModule } from "../infra/db/user-database.module";
-import { UserService } from "./services";
+import {
+  CreateUserUseCase,
+  DeleteUserUseCase,
+  RetrieveUserUseCase,
+  UpdateUserUseCase,
+} from "./use-cases";
 
-const PROVIDERS = [UserService];
+const PROVIDERS = [
+  DeleteUserUseCase,
+  RetrieveUserUseCase,
+  UpdateUserUseCase,
+  CreateUserUseCase,
+];
 
 @Module({
   imports: [UserDatabaseModule],
