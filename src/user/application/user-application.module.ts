@@ -8,6 +8,6 @@ const PROVIDERS = [...servicesProviders, ...useCasesProviders];
 @Module({
   imports: [UserDatabaseModule],
   providers: PROVIDERS,
-  exports: [UserDatabaseModule, ...servicesProviders]
+  exports: [UserDatabaseModule, ...servicesProviders, ...useCasesProviders]
 })
 export class UserApplicationModule {}

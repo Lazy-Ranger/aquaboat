@@ -2,7 +2,7 @@ export enum UserStatus {
   "ACTIVE" = "ACTIVE",
   "INACTIVE" = "INACTIVE",
   "BLOCKED" = "BLOCKED",
-  "DELETED" = "DELETED",
+  "DELETED" = "DELETED"
 }
 
 export const COUNTRY = [
@@ -11,21 +11,21 @@ export const COUNTRY = [
   "China",
   "United States",
   "Canada",
-  "Australia",
+  "Australia"
 ];
 
 export enum Gender {
   "MALE" = "MALE",
   "FEMALE" = "FEMALE",
-  "OTHER" = "OTHER",
+  "OTHER" = "OTHER"
 }
 
 export enum RetrieveUserBy {
   ID = "id",
-  EMAIL = "email",
+  EMAIL = "email"
 }
 
 export enum Provider {
   "GOOGLE" = "GOOGLE",
-  "PASSWORD" = "PASSWORD",
+  "PASSWORD" = "PASSWORD"
 }

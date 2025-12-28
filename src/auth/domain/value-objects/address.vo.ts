@@ -1,4 +1,4 @@
-import { IAddress } from "../../contracts";
+import { IAddress } from "../../../user/contracts";
 
 export type IAccountProps = IAddress;
 
