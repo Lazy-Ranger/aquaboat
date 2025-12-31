@@ -6,8 +6,10 @@ import {
   NotFoundException,
   Param,
   Put,
-  Query
+  Query,
+  UseGuards
 } from "@nestjs/common";
+import { JwtAuthGuard } from "../../../../auth/application/services";
 import {
   RetrieveUserUseCase,
   SearchUsersUseCase,
@@ -25,11 +27,13 @@ export class UserController {
     private readonly updateUserUC: UpdateUserUseCase
   ) {}
 
+  @UseGuards(JwtAuthGuard)
   @Get("search")
   async getUsers(@Query() query: SearchUsersDto) {
     return await this.searchUsersUC.execute(query);
   }
 
+  @UseGuards(JwtAuthGuard)
   @Get(":id")
   async getUserById(@Param("id") id: string) {
     const userRetrieveParams: IUserRetrieveParams = {
@@ -47,6 +51,7 @@ export class UserController {
   }
 
   @Put(":id")
+  @UseGuards(JwtAuthGuard)
   async updateUser(
     @Param("id") id: string,
     @Body() updateUserDto: UpdateUserDto
