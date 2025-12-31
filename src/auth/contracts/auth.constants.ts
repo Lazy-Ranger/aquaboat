@@ -9,4 +9,11 @@ export interface UserSession {
 
 export interface LoggedInResponse {
   accessToken: string;
+  idToken: string;
+  refreshToken: string;
+}
+
+export interface LoginUserRequest {
+  email: string;
+  password: string;
 }

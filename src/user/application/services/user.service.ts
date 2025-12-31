@@ -11,14 +11,15 @@ export class UserService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = this.retrieveUserUseCase.execute({
-      by: RetrieveUserBy.EMAIL,
-      value: email
-    });
-    if (user) {
+    try {
+      const user = await this.retrieveUserUseCase.execute({
+        by: RetrieveUserBy.EMAIL,
+        value: email
+      });
       return user;
+    } catch (err) {
+      return null;
     }
-    return null;
   }
 
   async create(user: IUserCreateParams): Promise<User> {

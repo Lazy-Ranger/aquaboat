@@ -2,10 +2,13 @@ import { Module } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtModule } from "@nestjs/jwt";
 import { UserModule } from "src/user/user.module";
-import { GenerateToken, RegisterUserUseCase } from "./use-cases";
+import {
+  GenerateToken,
+  RegisterUserUseCase,
+  ValidateUserUseCase
+} from "./use-cases";
 
-const PROVIDERS = [RegisterUserUseCase, GenerateToken];
-
+const PROVIDERS = [RegisterUserUseCase, GenerateToken, ValidateUserUseCase];
 @Module({
   imports: [
     UserModule,

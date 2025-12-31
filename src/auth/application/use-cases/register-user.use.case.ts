@@ -1,18 +1,14 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
-import { IUserCreateParams, LoggedInResponse } from "../../contracts";
+import { UserAlreadyExistsError } from "../../../user/errors";
+import { IUserCreateParams } from "../../contracts";
 import { User } from "../../domain/entities";
-import { UserAlreadyExistsError } from "../../errors";
-import { GenerateToken } from "./generate-token";
 
 @Injectable()
 export class RegisterUserUseCase {
-  constructor(
-    private readonly userService: UserService,
-    private readonly generateTokenUC: GenerateToken
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  async execute(params: IUserCreateParams): Promise<LoggedInResponse> {
+  async execute(params: IUserCreateParams): Promise<User> {
     const userExists = await this.userService.findByEmail(params.email);
 
     if (userExists) {
@@ -20,11 +16,6 @@ export class RegisterUserUseCase {
     }
 
     const user = await this.userService.create(params);
-
-    const tokens = await this.generateTokenUC.execute(new User(user));
-
-    return {
-      ...tokens
-    };
+    return new User(user);
   }
 }
