@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { User } from "src/user/domain/entities";
-import { IUserCreateParams, RetrieveUserBy } from "../../contracts";
+import { IUser, IUserCreateParams, RetrieveUserBy } from "../../contracts";
+import { UserMapper } from "../mappers";
 import { CreateUserUseCase, RetrieveUserUseCase } from "../use-cases";
 
 @Injectable()
@@ -10,19 +10,22 @@ export class UserService {
     private readonly createUserUseCase: CreateUserUseCase
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<IUser | null> {
     try {
       const user = await this.retrieveUserUseCase.execute({
         by: RetrieveUserBy.EMAIL,
         value: email
       });
-      return user;
+
+      return UserMapper.toDto(user);
     } catch (err) {
       return null;
     }
   }
 
-  async create(user: IUserCreateParams): Promise<User> {
-    return this.createUserUseCase.execute(user);
+  async create(params: IUserCreateParams): Promise<IUser> {
+    const user = await this.createUserUseCase.execute(params);
+
+    return UserMapper.toDto(user);
   }
 }

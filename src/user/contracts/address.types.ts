@@ -14,4 +14,8 @@ export interface IAddress {
 
 export type IAddressCreateParams = IAddress;
 
+export type ICreateAddressRequest = IAddressCreateParams;
+
 export type IAddressUpdateParams = Partial<IAddress>;
+
+export type IUpdateAddressRequest = IAddressUpdateParams;

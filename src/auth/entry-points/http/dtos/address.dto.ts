@@ -9,16 +9,16 @@ import {
 } from "class-validator";
 import {
   COUNTRY,
-  IAddressCreateParams,
-  IAddressUpdateParams
+  ICreateAddressRequest,
+  IUpdateAddressRequest
 } from "../../../../user/contracts";
 
-export class CreateAddressDto implements IAddressCreateParams {
+export class CreateAddressDto implements ICreateAddressRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(100)
-  line1: string;
+  line1!: string;
 
   @IsOptional()
   @IsString()
@@ -30,26 +30,26 @@ export class CreateAddressDto implements IAddressCreateParams {
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(30)
-  city: string;
+  city!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(50)
-  state: string;
+  state!: string;
 
   @IsString()
   @IsNotEmpty()
   @MinLength(5)
   @MaxLength(10)
-  postalCode: string;
+  postalCode!: string;
 
   @IsString()
   @IsNotEmpty()
   @IsIn(COUNTRY)
-  country: string;
+  country!: string;
 }
 
 export class UpdateAddressDto
   extends PartialType(CreateAddressDto)
-  implements IAddressUpdateParams {}
+  implements IUpdateAddressRequest {}

@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards
 } from "@nestjs/common";
-import { JwtAuthGuard } from "../../../../auth/application/services";
+import { JwtAuthGuard } from "../../../../auth/guards/jwt-auth.guard";
 import {
   RetrieveUserUseCase,
   SearchUsersUseCase,

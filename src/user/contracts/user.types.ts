@@ -16,7 +16,8 @@ export interface IUser {
   updatedAt: Date;
   provider: Provider;
   providerUserId?: string;
-  authId: string;
+  authId?: string;
+  password?: string;
 }
 
 export type IUserSearchFilter = Pick<
@@ -24,15 +25,9 @@ export type IUserSearchFilter = Pick<
   "name" | "status" | "gender" | "address" | "createdAt"
 >;
 
-// export interface IUserSearchParams {
-//   page?: number;
-//   limit?: number;
-//   filter?: string; // JSON stringified IUserSearchFilter
-// }
-
 export type IUserCreateParams = Omit<
   IUser,
-  "id" | "name" | "status" | "createdAt" | "updatedAt"
+  "id" | "name" | "status" | "createdAt" | "updatedAt" | "authId"
 >;
 
 export type IUserUpdateParams = Partial<Omit<IUserCreateParams, "address">> & {

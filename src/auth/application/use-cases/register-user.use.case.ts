@@ -1,21 +1,20 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
+import { IUser } from "../../../user/contracts";
 import { UserAlreadyExistsError } from "../../../user/errors";
-import { IUserCreateParams } from "../../contracts";
-import { User } from "../../domain/entities";
+import { IUserRegisterParams } from "../../contracts";
 
 @Injectable()
 export class RegisterUserUseCase {
   constructor(private readonly userService: UserService) {}
 
-  async execute(params: IUserCreateParams): Promise<User> {
+  async execute(params: IUserRegisterParams): Promise<IUser> {
     const userExists = await this.userService.findByEmail(params.email);
 
     if (userExists) {
       throw new UserAlreadyExistsError(params.email, userExists.id);
     }
 
-    const user = await this.userService.create(params);
-    return new User(user);
+    return await this.userService.create(params);
   }
 }

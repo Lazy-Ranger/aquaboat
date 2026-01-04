@@ -1,2 +1,2 @@
 export * from "./auth.constants";
-export * from "./user.type";
+export * from "./auth.types";

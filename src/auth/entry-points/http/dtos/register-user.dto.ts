@@ -12,19 +12,16 @@ import {
   MinLength,
   ValidateNested
 } from "class-validator";
-import {
-  Gender,
-  IUserCreateParams,
-  Provider
-} from "../../../../user/contracts";
+import { IRegisterUserRequest } from "src/auth/contracts";
+import { Gender } from "../../../../user/contracts";
 import { CreateAddressDto } from "./address.dto";
 
-export class CreateUserDto implements IUserCreateParams {
+export class RegisterUserDto implements IRegisterUserRequest {
   @IsString()
   @IsNotEmpty()
   @MinLength(2)
   @MaxLength(50)
-  firstName: string;
+  firstName!: string;
 
   @IsOptional()
   @IsString()
@@ -35,17 +32,16 @@ export class CreateUserDto implements IUserCreateParams {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsNotEmpty()
   @IsPhoneNumber()
-  phone: string;
+  phone!: string;
 
-  @IsString()
   @IsNotEmpty()
   @IsEnum(Gender)
-  gender: Gender;
+  gender!: Gender;
 
   @IsOptional()
   @IsUrl()
@@ -61,17 +57,4 @@ export class CreateUserDto implements IUserCreateParams {
   @MinLength(1)
   @MaxLength(30)
   password: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @IsEnum(Provider)
-  provider: Provider;
-
-  @IsString()
-  @IsOptional()
-  providerUserId: string;
-
-  @IsString()
-  @IsOptional()
-  authId: string;
 }

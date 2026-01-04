@@ -4,6 +4,6 @@ import { UserController } from "./controllers/user.controller";
 
 @Module({
   imports: [UserApplicationModule],
-  controllers: [UserController],
+  controllers: [UserController]
 })
-export class HttpEntryPointModule {}
+export class UserHttpEntryPointModule {}

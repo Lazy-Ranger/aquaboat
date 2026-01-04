@@ -19,7 +19,8 @@ export class UserMapper {
       updatedAt: user.updatedAt,
       provider: user.provider,
       providerUserId: user.providerUserId,
-      authId: user.authId
+      authId: user.authId,
+      password: user.password
     };
   }
 

@@ -6,4 +6,4 @@ import { AuthController } from "./controllers/auth.controller";
   imports: [AuthApplicationModule],
   controllers: [AuthController]
 })
-export class HttpEntryPointModule {}
+export class AuthHttpEntryPointModule {}

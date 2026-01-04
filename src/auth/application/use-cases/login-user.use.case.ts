@@ -1,15 +1,15 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
+import { IUser } from "../../../user/contracts";
 import { UserNotFoundError } from "../../../user/errors";
-import { LoginUserRequest } from "../../contracts";
-import { User } from "../../domain/entities";
+import { ILoginUserRequest } from "../../contracts";
 import { IncorrectPasswordError } from "../../errors";
 
 @Injectable()
-export class ValidateUserUseCase {
+export class LoginUserUseCase {
   constructor(private readonly userService: UserService) {}
 
-  async execute(params: LoginUserRequest): Promise<User> {
+  async execute(params: ILoginUserRequest): Promise<IUser> {
     const user = await this.userService.findByEmail(params.email);
 
     if (!user) {
@@ -20,6 +20,6 @@ export class ValidateUserUseCase {
       throw new IncorrectPasswordError(params.email);
     }
 
-    return new User(user);
+    return user;
   }
 }

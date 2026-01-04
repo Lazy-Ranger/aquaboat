@@ -1,4 +1,4 @@
-export interface UserSession {
+export interface IUserSession {
   _id: string;
   email: string;
   profile: {
@@ -7,13 +7,13 @@ export interface UserSession {
   };
 }
 
-export interface LoggedInResponse {
+export interface ILoggedInResponse {
   accessToken: string;
   idToken: string;
   refreshToken: string;
 }
 
-export interface LoginUserRequest {
+export interface ILoginUserRequest {
   email: string;
   password: string;
 }

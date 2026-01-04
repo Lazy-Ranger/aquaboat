@@ -6,17 +6,17 @@ import {
   MaxLength,
   MinLength
 } from "class-validator";
-import { LoginUserRequest } from "../../../contracts";
+import { ILoginUserRequest } from "../../../contracts";
 
-export class LoginUserDto implements LoginUserRequest {
+export class LoginUserDto implements ILoginUserRequest {
   @IsString()
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @IsOptional()
   @MinLength(1)
   @MaxLength(30)
-  password: string;
+  password!: string;
 }
