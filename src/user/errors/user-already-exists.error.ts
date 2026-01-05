@@ -6,7 +6,7 @@ export class UserAlreadyExistsError extends Error {
   constructor(
     public readonly email: string,
     public readonly id: string,
-    public readonly message: string = "User already exists.",
+    public readonly message: string = "User already exists."
   ) {
     super(message);
     this.description = `User \`${email}\` already exists with id \`${id}\`.`;

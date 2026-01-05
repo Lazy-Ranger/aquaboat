@@ -1,12 +1,17 @@
 import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { randomUUID } from "crypto";
+import { JwtConfig } from "src/config/jwt.config";
 import { IUser } from "../../../user/contracts";
 import { ILoggedInResponse } from "../../contracts";
 
 @Injectable()
 export class IssueTokensUseCase {
-  constructor(private jwtService: JwtService) {}
+  constructor(
+    private jwtService: JwtService,
+    private readonly config: ConfigService<JwtConfig>
+  ) {}
 
   private createAccessTokenPayload(user: IUser) {
     return {
@@ -36,8 +41,8 @@ export class IssueTokensUseCase {
     const refreshToken = randomUUID();
 
     const jti = randomUUID();
-    const iss = "https://nestjs.com";
-    const aud = ["*"];
+    const iss = this.config.getOrThrow<string>("jwt.issuer");
+    const aud = this.config.getOrThrow<string[]>("jwt.audience");
 
     const accessToken = await this.jwtService.signAsync({
       ...accessTokenPayload,

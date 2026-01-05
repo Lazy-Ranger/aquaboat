@@ -1,25 +1,28 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
-import { IUser } from "../../../user/contracts";
-import { UserNotFoundError } from "../../../user/errors";
-import { ILoginUserRequest } from "../../contracts";
-import { IncorrectPasswordError } from "../../errors";
+import { ILoggedInResponse, ILoginUserRequest } from "../../contracts";
+import { UnauthorizedError } from "../../errors";
+import { IssueTokensUseCase } from "./issue-tokens.use.case";
 
 @Injectable()
 export class LoginUserUseCase {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly issueTokensUseCase: IssueTokensUseCase
+  ) {}
 
-  async execute(params: ILoginUserRequest): Promise<IUser> {
-    const user = await this.userService.findByEmail(params.email);
+  async execute(params: ILoginUserRequest): Promise<ILoggedInResponse> {
+    const { email, password } = params;
+
+    const user = await this.userService.validateByEmailAndPassword(
+      email,
+      password
+    );
 
     if (!user) {
-      throw new UserNotFoundError(params.email);
+      throw new UnauthorizedError("Email or password is incorrect.");
     }
 
-    if (params.password !== user.password) {
-      throw new IncorrectPasswordError(params.email);
-    }
-
-    return user;
+    return this.issueTokensUseCase.execute(user);
   }
 }

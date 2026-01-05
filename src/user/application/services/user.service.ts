@@ -28,4 +28,20 @@ export class UserService {
 
     return UserMapper.toDto(user);
   }
+
+  async validateByEmailAndPassword(
+    email: string,
+    password: string
+  ): Promise<IUser | null> {
+    const user = await this.retrieveUserUseCase.execute({
+      by: RetrieveUserBy.EMAIL,
+      value: email
+    });
+
+    if (!(await user.hasValidPassword(password))) {
+      return null;
+    }
+
+    return UserMapper.toDto(user);
+  }
 }

@@ -1,3 +1,4 @@
+import bcrypt from "bcrypt";
 import { Address } from "../../../auth/domain/value-objects/address.vo";
 import { generateId } from "../../../helpers";
 import { Gender, IUser, Provider, UserStatus } from "../../contracts";
@@ -68,5 +69,13 @@ export class User implements IUser {
 
   private generateAuthId(provider: Provider, providerUserId?: string): string {
     return `${provider.toLowerCase()}|${providerUserId ?? this.id}`;
+  }
+
+  public async hasValidPassword(password: string): Promise<boolean> {
+    if (this.password) {
+      return bcrypt.compare(password, this.password);
+    }
+
+    return false;
   }
 }

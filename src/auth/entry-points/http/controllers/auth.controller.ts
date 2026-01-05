@@ -7,23 +7,18 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { Provider } from "../../../../user/contracts";
+import { UserNotFoundError } from "../../../../user/errors";
 import {
-  UserAlreadyExistsError,
-  UserNotFoundError
-} from "../../../../user/errors";
-import {
-  IssueTokensUseCase,
   LoginUserUseCase,
   RegisterUserUseCase
 } from "../../../application/use-cases";
-import { IncorrectPasswordError } from "../../../errors";
+import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
 import { LoginUserDto, RegisterUserDto } from "../dtos";
 
 @Controller("/auth")
 export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly generateTokenUseCase: IssueTokensUseCase,
     private readonly loginUserUseCase: LoginUserUseCase
   ) {}
 
@@ -35,35 +30,35 @@ export class AuthController {
     };
 
     try {
-      const user = await this.registerUserUseCase.execute(userRegisterParams);
-      const token = await this.generateTokenUseCase.execute(user);
+      const tokens = await this.registerUserUseCase.execute(userRegisterParams);
       return {
-        ...token
+        ...tokens
       };
     } catch (err) {
-      console.log(err);
-      if (err instanceof UserAlreadyExistsError) {
-        return new ConflictException(err);
+      if (err instanceof UserAlreadyRegisteredError) {
+        throw new ConflictException(err);
       }
+
+      throw err;
     }
   }
 
   @Post("/login")
   async login(@Body() body: LoginUserDto) {
     try {
-      const user = await this.loginUserUseCase.execute(body);
-      const token = await this.generateTokenUseCase.execute(user);
+      const tokens = await this.loginUserUseCase.execute(body);
       return {
-        ...token
+        ...tokens
       };
     } catch (err) {
-      console.log(err);
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
       }
-      if (err instanceof IncorrectPasswordError) {
+      if (err instanceof UnauthorizedError) {
         throw new UnauthorizedException(err);
       }
+
+      throw err;
     }
   }
 }

@@ -17,7 +17,6 @@ export interface IUser {
   provider: Provider;
   providerUserId?: string;
   authId?: string;
-  password?: string;
 }
 
 export type IUserSearchFilter = Pick<
@@ -28,7 +27,9 @@ export type IUserSearchFilter = Pick<
 export type IUserCreateParams = Omit<
   IUser,
   "id" | "name" | "status" | "createdAt" | "updatedAt" | "authId"
->;
+> & {
+  password?: string;
+};
 
 export type IUserUpdateParams = Partial<Omit<IUserCreateParams, "address">> & {
   address?: IAddressUpdateParams;

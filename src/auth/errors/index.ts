@@ -1,1 +1,2 @@
-export * from "./incorrect-password.error";
+export * from "./unauthorized.error";
+export * from "./user-already-registered.error";
