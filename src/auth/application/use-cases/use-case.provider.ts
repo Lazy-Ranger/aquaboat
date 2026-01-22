@@ -1,5 +1,11 @@
 import { IssueTokensUseCase } from "./issue-tokens.use.case";
 import { LoginUserUseCase } from "./login-user.use.case";
+import { LogoutUserUseCase } from "./logout-user.use.case";
 import { RegisterUserUseCase } from "./register-user.use.case";
 
-export default [IssueTokensUseCase, RegisterUserUseCase, LoginUserUseCase];
+export default [
+  IssueTokensUseCase,
+  RegisterUserUseCase,
+  LoginUserUseCase,
+  LogoutUserUseCase
+];

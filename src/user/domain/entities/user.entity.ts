@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
-import { Address } from "../../../auth/domain/value-objects/address.vo";
 import { generateId } from "../../../helpers";
 import { Gender, IUser, Provider, UserStatus } from "../../contracts";
+import { Address } from "../value-objects/address.vo";
 
 export type IUserProps = Omit<
   IUser,

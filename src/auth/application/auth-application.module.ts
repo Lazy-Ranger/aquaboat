@@ -23,6 +23,6 @@ const PROVIDERS = [...JwtStrategy, ...useCasesProviders];
     })
   ],
   providers: PROVIDERS,
-  exports: PROVIDERS
+  exports: [...PROVIDERS, JwtModule]
 })
 export class AuthApplicationModule {}

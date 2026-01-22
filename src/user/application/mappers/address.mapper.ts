@@ -1,5 +1,5 @@
-import { Address } from "../../../auth/domain/value-objects";
 import { IAddress } from "../../contracts";
+import { Address } from "../../domain/value-objects/address.vo";
 
 export class AddressMapper {
   static toDto(address: Address): IAddress {

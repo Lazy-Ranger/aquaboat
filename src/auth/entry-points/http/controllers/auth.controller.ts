@@ -4,22 +4,30 @@ import {
   Controller,
   NotFoundException,
   Post,
-  UnauthorizedException
+  Req,
+  UnauthorizedException,
+  UseGuards
 } from "@nestjs/common";
+import { JwtService } from "@nestjs/jwt";
+import { ExtractJwt } from "passport-jwt";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
   LoginUserUseCase,
+  LogoutUserUseCase,
   RegisterUserUseCase
 } from "../../../application/use-cases";
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
+import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
 import { LoginUserDto, RegisterUserDto } from "../dtos";
 
 @Controller("/auth")
 export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly loginUserUseCase: LoginUserUseCase
+    private readonly loginUserUseCase: LoginUserUseCase,
+    private readonly logoutUserUseCase: LogoutUserUseCase,
+    private readonly jwtService: JwtService
   ) {}
 
   @Post("/register")
@@ -30,10 +38,7 @@ export class AuthController {
     };
 
     try {
-      const tokens = await this.registerUserUseCase.execute(userRegisterParams);
-      return {
-        ...tokens
-      };
+      return this.registerUserUseCase.execute(userRegisterParams);
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
         throw new ConflictException(err);
@@ -46,10 +51,7 @@ export class AuthController {
   @Post("/login")
   async login(@Body() body: LoginUserDto) {
     try {
-      const tokens = await this.loginUserUseCase.execute(body);
-      return {
-        ...tokens
-      };
+      return this.loginUserUseCase.execute(body);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -58,6 +60,17 @@ export class AuthController {
         throw new UnauthorizedException(err);
       }
 
+      throw err;
+    }
+  }
+
+  @Post("/logout")
+  @UseGuards(JwtAuthGuard)
+  logout(@Req() req: Request) {
+    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
+    try {
+      return this.logoutUserUseCase.execute(token);
+    } catch (err) {
       throw err;
     }
   }
