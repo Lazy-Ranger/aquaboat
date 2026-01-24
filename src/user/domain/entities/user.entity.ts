@@ -1,4 +1,4 @@
-import bcrypt from "bcrypt";
+import * as bcrypt from "bcrypt";
 import { generateId } from "../../../helpers";
 import { Gender, IUser, Provider, UserStatus } from "../../contracts";
 import { Address } from "../value-objects/address.vo";

@@ -12,11 +12,12 @@ export class LogoutUserUseCase {
 
   async execute(token: string): Promise<boolean> {
     const user = this.jwtService.decode(token);
-    if (user.exp > Date.now()) {
-      const diff = Math.abs(user.exp - Date.now());
-      await this.redis.set(user.email, token, "EX", diff);
+    const nowInSeconds = Math.floor(Date.now() / 1000);
+    if (user.exp > nowInSeconds) {
+      const ttl = user.exp - nowInSeconds;
+      await this.redis.set(token, 1, "EX", ttl);
     }
 
-    return false;
+    return true;
   }
 }
