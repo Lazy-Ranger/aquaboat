@@ -18,6 +18,7 @@ import {
 import { IUserRetrieveParams, RetrieveUserBy } from "../../../contracts";
 import { UserNotFoundError, UserUpdateFailedError } from "../../../errors";
 import { SearchUsersDto, UpdateUserDto } from "../dtos";
+import { UserHttpMapper } from "../mappers/user-http.mapper";
 
 @Controller("/users")
 @UseGuards(JwtAuthGuard)
@@ -30,7 +31,12 @@ export class UserController {
 
   @Get("search")
   async getUsers(@Query() query: SearchUsersDto) {
-    return await this.searchUsersUC.execute(query);
+    const paginationResult = await this.searchUsersUC.execute(query);
+
+    return {
+      ...paginationResult,
+      data: paginationResult.data.map(UserHttpMapper.toDto)
+    };
   }
 
   @Get(":id")
@@ -41,7 +47,9 @@ export class UserController {
     };
 
     try {
-      return await this.retrieveUserUC.execute(userRetrieveParams);
+      const user = await this.retrieveUserUC.execute(userRetrieveParams);
+
+      return UserHttpMapper.toDto(user);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -55,7 +63,9 @@ export class UserController {
     @Body() updateUserDto: UpdateUserDto
   ) {
     try {
-      return await this.updateUserUC.execute(id, updateUserDto);
+      const user = await this.updateUserUC.execute(id, updateUserDto);
+
+      return UserHttpMapper.toDto(user);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);

@@ -8,7 +8,6 @@ import {
   UnauthorizedException,
   UseGuards
 } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
 import { ExtractJwt } from "passport-jwt";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
@@ -26,8 +25,7 @@ export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
-    private readonly logoutUserUseCase: LogoutUserUseCase,
-    private readonly jwtService: JwtService
+    private readonly logoutUserUseCase: LogoutUserUseCase
   ) {}
 
   @Post("/register")

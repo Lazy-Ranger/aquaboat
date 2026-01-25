@@ -5,33 +5,32 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import Redis from "ioredis";
 import { ExtractJwt } from "passport-jwt";
-import { CACHE_TOKEN } from "../../infra/cache/cache.token";
+import { ICacheService } from "../../application/ports/cache.port";
+import { CACHE_SERVICE } from "../../tokens";
 import { UnauthorizedError } from "../errors";
+
 @Injectable()
 export class JwtAuthGuard extends AuthGuard("jwt") {
-  constructor(@Inject(CACHE_TOKEN) private readonly redis: Redis) {
+  constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
     super();
   }
 
   async canActivate(context: ExecutionContext) {
-    const canActivate = await super.canActivate(context);
-    if (!canActivate) return false;
+    await super.canActivate(context);
 
     const request = context.switchToHttp().getRequest();
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request) as string;
 
-    const isTokenFound = await this.redis.exists(token);
-    if (isTokenFound != 0) {
+    const isTokenRevoked = await this.cache.exists(token);
+
+    if (isTokenRevoked !== 0) {
       throw new UnauthorizedException(
-        new UnauthorizedError("Token not found or expired")
+        new UnauthorizedError("Token is expired")
       );
     }
 
     return true;
-
-    // return super.canActivate(context);
   }
 
   handleRequest(err, user, info) {
