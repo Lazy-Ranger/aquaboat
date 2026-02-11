@@ -10,7 +10,6 @@ export class RedisService implements ICacheService {
 
   constructor(config: ConfigService<RedisConfig>) {
     const url = config.getOrThrow<string>("redis.url");
-
     this.redis = new Redis(url);
   }
 
