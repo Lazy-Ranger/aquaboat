@@ -15,7 +15,7 @@ export class LogoutUserUseCase {
     const nowInSeconds = Date.now() / 1000;
     if (user.exp > nowInSeconds) {
       const ttl = user.exp - nowInSeconds;
-      await this.cache.set(token, 1, ttl);
+      await this.cache.set(token, 1, Math.floor(ttl));
     }
 
     return true;

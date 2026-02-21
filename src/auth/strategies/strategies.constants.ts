@@ -1,0 +1,4 @@
+export enum Strategy {
+    JWT_ACCESS_TOKEN = 'JWT_ACCESS_TOKEN',
+    JWT_REFRESH_TOKEN = 'JWT_REFRESH_TOKEN'
+}

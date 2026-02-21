@@ -32,8 +32,7 @@ export class UserMongoRepo implements IUserRepo {
   }
 
   async findByEmail(email: string): Promise<User | null> {
-    const user = await this.userModel.findOne({ email });
-
+    const user = await this.userModel.findOne({ email }).select("+password");
     return user ? this.userMapper.toDomain(user) : null;
   }
 

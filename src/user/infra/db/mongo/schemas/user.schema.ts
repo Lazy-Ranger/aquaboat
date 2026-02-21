@@ -50,7 +50,7 @@ export class UserSchema implements IUserPersistence {
   })
   address!: AddressDocument;
 
-  @Prop({ min: 1, max: 30 })
+  @Prop({ min: 1, max: 100 , select: false})
   password!: string;
 
   @Prop({ required: true, enum: Provider, type: String })

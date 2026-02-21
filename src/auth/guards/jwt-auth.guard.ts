@@ -9,9 +9,10 @@ import { ExtractJwt } from "passport-jwt";
 import { ICacheService } from "../../application/ports/cache.port";
 import { CACHE_SERVICE } from "../../tokens";
 import { UnauthorizedError } from "../errors";
+import { Strategy } from "../strategies/strategies.constants";
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard("jwt") {
+export class JwtAuthGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
   constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
     super();
   }

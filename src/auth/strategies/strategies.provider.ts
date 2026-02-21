@@ -1,4 +1,5 @@
 import { Provider } from "@nestjs/common";
-import { JwtStrategy } from "./jwt.strategy";
+import { JwtAccessTokenStrategy } from "./access-token.strategy";
+import { JwtRefreshAccessTokenStrategy } from "./refresh-token.strategy";
 
-export default [JwtStrategy] as Provider[];
+export default [JwtAccessTokenStrategy, JwtRefreshAccessTokenStrategy] as Provider[];

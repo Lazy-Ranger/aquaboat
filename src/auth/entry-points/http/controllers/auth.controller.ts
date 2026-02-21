@@ -5,6 +5,7 @@ import {
   NotFoundException,
   Post,
   Req,
+  Res,
   UnauthorizedException,
   UseGuards
 } from "@nestjs/common";
@@ -16,9 +17,12 @@ import {
   LogoutUserUseCase,
   RegisterUserUseCase
 } from "../../../application/use-cases";
+import { Response } from "express";
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
 import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
+import { JwtRefreshTokenGuard } from '../../../guards/jwt-refresh-token.guard';
 import { LoginUserDto, RegisterUserDto } from "../dtos";
+
 
 @Controller("/auth")
 export class AuthController {
@@ -26,30 +30,33 @@ export class AuthController {
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
     private readonly logoutUserUseCase: LogoutUserUseCase
-  ) {}
+  ) { }
 
   @Post("/register")
-  async register(@Body() registerUserReq: RegisterUserDto) {
+  async register(@Body() registerUserReq: RegisterUserDto, @Res() res: Response) {
     const userRegisterParams = {
       ...registerUserReq,
       provider: Provider.PASSWORD
     };
 
     try {
-      return this.registerUserUseCase.execute(userRegisterParams);
+      const data = await this.registerUserUseCase.execute(userRegisterParams);
+      res.cookie('refreshToken', data.refreshToken);
+      return res.send(data);
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
-        throw new ConflictException(err);
+        return new ConflictException(err);
       }
-
-      throw err;
+      return err;
     }
   }
 
   @Post("/login")
-  async login(@Body() body: LoginUserDto) {
+  async login(@Body() body: LoginUserDto, @Res() res: Response) {
     try {
-      return this.loginUserUseCase.execute(body);
+      const data = await this.loginUserUseCase.execute(body);
+      res.cookie('refreshToken', data.refreshToken);
+      return res.send(data);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -64,10 +71,24 @@ export class AuthController {
 
   @Post("/logout")
   @UseGuards(JwtAuthGuard)
-  logout(@Req() req: Request) {
+  async logout(@Req() req: Request) {
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
     try {
-      return this.logoutUserUseCase.execute(token);
+      const data = await this.logoutUserUseCase.execute(token);
+      return data;
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post("/refresh")
+  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtRefreshTokenGuard)
+  async refresh(@Req() req: Request) {
+    const RefreshToken = req;
+    console.log(RefreshToken);
+    try {
+      return  true;
     } catch (err) {
       throw err;
     }

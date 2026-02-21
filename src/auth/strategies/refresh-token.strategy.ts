@@ -4,22 +4,29 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { JwtConfig } from "../../config/jwt.config";
 import { IUserSession } from "../contracts";
+import { Strategy as JwtStrategy} from "./strategies.constants";
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtRefreshAccessTokenStrategy extends PassportStrategy(
+  Strategy,
+  JwtStrategy.JWT_REFRESH_TOKEN
+) {
   constructor(configService: ConfigService<JwtConfig>) {
-    const secret = configService.getOrThrow("jwt.secret");
+    const secret = configService.getOrThrow('jwt.secret');
 
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (req) => req?.cookies?.refreshToken
+      ]),
       ignoreExpiration: false,
       secretOrKey: secret,
-      issuer: configService.getOrThrow("jwt.issuer"),
-      audience: configService.getOrThrow("jwt.audience")
+      issuer: configService.getOrThrow('jwt.issuer'),
+      audience: configService.getOrThrow('jwt.audience'),
     });
   }
 
   async validate(payload: IUserSession): Promise<IUserSession> {
-    return { ...payload };
+    return payload;
   }
 }
+5
