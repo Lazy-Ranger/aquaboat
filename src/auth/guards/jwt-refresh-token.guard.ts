@@ -5,14 +5,15 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ExtractJwt } from "passport-jwt";
 import { ICacheService } from "../../application/ports/cache.port";
 import { CACHE_SERVICE } from "../../tokens";
 import { UnauthorizedError } from "../errors";
 import { Strategy } from "../strategies/strategies.constants";
 
 @Injectable()
-export class JwtRefreshTokenGuard extends AuthGuard(Strategy.JWT_REFRESH_TOKEN) {
+export class JwtRefreshTokenGuard extends AuthGuard(
+  Strategy.JWT_REFRESH_TOKEN
+) {
   constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
     super();
   }
@@ -35,6 +36,7 @@ export class JwtRefreshTokenGuard extends AuthGuard(Strategy.JWT_REFRESH_TOKEN) 
 
   handleRequest(err, user, info) {
     if (err || !user) {
+      console.log("Error in JWT Refresh Token Guard:", err, info);
       const unauthorizedError = new UnauthorizedError(err?.message);
 
       throw new UnauthorizedException(unauthorizedError);

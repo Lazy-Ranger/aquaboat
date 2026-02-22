@@ -51,17 +51,24 @@ export class IssueTokensUseCase {
     const jti = randomUUID();
     const iss = this.config.getOrThrow<string>("jwt.issuer");
     const aud = this.config.getOrThrow<string[]>("jwt.audience");
-
+    const accessExpireTime = this.config.getOrThrow<StringValue>(
+      "jwt.accessExpireTime"
+    );
     const refreshExpireTime = this.config.getOrThrow<StringValue>(
       "jwt.refreshExpireTime"
     );
 
-    const accessToken = await this.jwtService.signAsync({
-      ...accessTokenPayload,
-      jti,
-      iss,
-      aud
-    });
+    const accessToken = await this.jwtService.signAsync(
+      {
+        ...accessTokenPayload,
+        jti,
+        iss,
+        aud
+      },
+      {
+        expiresIn: accessExpireTime
+      }
+    );
 
     const idToken = await this.jwtService.signAsync({
       ...idTokenPayload,
@@ -74,8 +81,8 @@ export class IssueTokensUseCase {
       {
         ...refreshTokenPayload,
         jti,
-        issuer: iss,
-        audience: aud
+        iss,
+        aud
       },
       {
         expiresIn: refreshExpireTime

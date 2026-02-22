@@ -84,8 +84,9 @@ export class AuthController {
         refreshToken
       );
       res.cookie("refreshToken", "");
-      return data;
+      res.send(data);
     } catch (err) {
+      console.log(err);
       throw err;
     }
   }
