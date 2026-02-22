@@ -3,7 +3,8 @@ import { getAppConfig } from "./app.config";
 
 export interface JwtConfig {
   "jwt.secret": string;
-  "jwt.expireTime": string;
+  "jwt.accessExpireTime": string;
+  "jwt.refreshExpireTime": string;
   "jwt.issuer": string;
   "jwt.audience": string[];
 }
@@ -13,7 +14,8 @@ export const getJwtConfig = () => {
 
   return {
     secret: process.env.JWT_SECRET,
-    expireTime: process.env.JWT_EXPIRE_TIME,
+    accessExpireTime: process.env.JWT_EXPIRE_TIME,
+    refreshExpireTime: process.env.JWT_REFRESH_TIME,
     issuer: process.env.JWT_ISSUER || appConfig.host,
     audience: ["*"]
   };

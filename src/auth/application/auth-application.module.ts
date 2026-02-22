@@ -17,7 +17,7 @@ const PROVIDERS = [...JwtStrategy, ...useCasesProviders];
       useFactory: (configService: ConfigService<JwtConfig>) => {
         return {
           secret: configService.get("jwt.secret"),
-          signOptions: { expiresIn: configService.get("jwt.expireTime") }
+          signOptions: { expiresIn: configService.get("jwt.accessExpireTime") }
         };
       }
     })

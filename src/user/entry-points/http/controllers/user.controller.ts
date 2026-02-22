@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards
 } from "@nestjs/common";
-import { JwtAuthGuard } from "../../../../auth/guards/jwt-auth.guard";
+import { JwtAccessTokenGuard } from "../../../../auth/guards/jwt-access-token.guard";
 import {
   RetrieveUserUseCase,
   SearchUsersUseCase,
@@ -21,7 +21,7 @@ import { SearchUsersDto, UpdateUserDto } from "../dtos";
 import { UserHttpMapper } from "../mappers/user-http.mapper";
 
 @Controller("/users")
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAccessTokenGuard)
 export class UserController {
   constructor(
     private readonly retrieveUserUC: RetrieveUserUseCase,

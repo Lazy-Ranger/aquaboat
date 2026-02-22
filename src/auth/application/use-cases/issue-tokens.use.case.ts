@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { randomUUID } from "crypto";
+import { StringValue } from "ms";
 import { JwtConfig } from "src/config/jwt.config";
 import { IUser } from "../../../user/contracts";
 import { ILoggedInResponse } from "../../contracts";
@@ -51,6 +52,10 @@ export class IssueTokensUseCase {
     const iss = this.config.getOrThrow<string>("jwt.issuer");
     const aud = this.config.getOrThrow<string[]>("jwt.audience");
 
+    const refreshExpireTime = this.config.getOrThrow<StringValue>(
+      "jwt.refreshExpireTime"
+    );
+
     const accessToken = await this.jwtService.signAsync({
       ...accessTokenPayload,
       jti,
@@ -69,11 +74,11 @@ export class IssueTokensUseCase {
       {
         ...refreshTokenPayload,
         jti,
-        iss,
-        aud
+        issuer: iss,
+        audience: aud
       },
       {
-        expiresIn: "7d"
+        expiresIn: refreshExpireTime
       }
     );
 

@@ -9,31 +9,35 @@ import {
   UnauthorizedException,
   UseGuards
 } from "@nestjs/common";
+import { Request, Response } from "express";
 import { ExtractJwt } from "passport-jwt";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
   LoginUserUseCase,
   LogoutUserUseCase,
+  RefreshTokensUseCase,
   RegisterUserUseCase
 } from "../../../application/use-cases";
-import { Response } from "express";
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
-import { JwtAuthGuard } from "../../../guards/jwt-auth.guard";
-import { JwtRefreshTokenGuard } from '../../../guards/jwt-refresh-token.guard';
+import { JwtAccessTokenGuard } from "../../../guards/jwt-access-token.guard";
+import { JwtRefreshTokenGuard } from "../../../guards/jwt-refresh-token.guard";
 import { LoginUserDto, RegisterUserDto } from "../dtos";
-
 
 @Controller("/auth")
 export class AuthController {
   constructor(
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
-    private readonly logoutUserUseCase: LogoutUserUseCase
-  ) { }
+    private readonly logoutUserUseCase: LogoutUserUseCase,
+    private readonly refreshTokenUC: RefreshTokensUseCase
+  ) {}
 
   @Post("/register")
-  async register(@Body() registerUserReq: RegisterUserDto, @Res() res: Response) {
+  async register(
+    @Body() registerUserReq: RegisterUserDto,
+    @Res() res: Response
+  ) {
     const userRegisterParams = {
       ...registerUserReq,
       provider: Provider.PASSWORD
@@ -41,7 +45,7 @@ export class AuthController {
 
     try {
       const data = await this.registerUserUseCase.execute(userRegisterParams);
-      res.cookie('refreshToken', data.refreshToken);
+      res.cookie("refreshToken", data.refreshToken);
       return res.send(data);
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
@@ -55,7 +59,7 @@ export class AuthController {
   async login(@Body() body: LoginUserDto, @Res() res: Response) {
     try {
       const data = await this.loginUserUseCase.execute(body);
-      res.cookie('refreshToken', data.refreshToken);
+      res.cookie("refreshToken", data.refreshToken);
       return res.send(data);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
@@ -70,11 +74,16 @@ export class AuthController {
   }
 
   @Post("/logout")
-  @UseGuards(JwtAuthGuard)
-  async logout(@Req() req: Request) {
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
+  @UseGuards(JwtAccessTokenGuard)
+  async logout(@Req() req: Request, @Res() res: Response) {
+    const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
+    const refreshToken = (req as any).cookies?.refreshToken as string;
     try {
-      const data = await this.logoutUserUseCase.execute(token);
+      const data = await this.logoutUserUseCase.execute(
+        accessToken,
+        refreshToken
+      );
+      res.cookie("refreshToken", "");
       return data;
     } catch (err) {
       throw err;
@@ -82,14 +91,16 @@ export class AuthController {
   }
 
   @Post("/refresh")
-  @UseGuards(JwtAuthGuard)
   @UseGuards(JwtRefreshTokenGuard)
-  async refresh(@Req() req: Request) {
-    const RefreshToken = req;
-    console.log(RefreshToken);
+  async refresh(@Req() req: Request, @Res() res: Response) {
     try {
-      return  true;
+      const data = await this.refreshTokenUC.execute(req);
+      res.cookie("refreshToken", data.refreshToken);
+      res.send(data);
     } catch (err) {
+      if (err instanceof UnauthorizedError) {
+        throw new UnauthorizedException(err);
+      }
       throw err;
     }
   }

@@ -10,12 +10,20 @@ export class LogoutUserUseCase {
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService
   ) {}
 
-  async execute(token: string): Promise<boolean> {
-    const user = this.jwtService.decode(token);
+  async execute(accessToken: string, refreshToken: string): Promise<boolean> {
+    const accessTokenData = this.jwtService.decode(accessToken);
+    const refreshTokenData = this.jwtService.decode(refreshToken) as {
+      exp: number;
+    };
     const nowInSeconds = Date.now() / 1000;
-    if (user.exp > nowInSeconds) {
-      const ttl = user.exp - nowInSeconds;
-      await this.cache.set(token, 1, Math.floor(ttl));
+    if (accessTokenData.exp > nowInSeconds) {
+      const ttl = accessTokenData.exp - nowInSeconds;
+      await this.cache.set(accessToken, 1, Math.floor(ttl));
+    }
+
+    if (refreshTokenData.exp > nowInSeconds) {
+      const ttl = refreshTokenData.exp - nowInSeconds;
+      await this.cache.set(refreshToken, 1, Math.floor(ttl));
     }
 
     return true;

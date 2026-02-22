@@ -12,7 +12,7 @@ import { UnauthorizedError } from "../errors";
 import { Strategy } from "../strategies/strategies.constants";
 
 @Injectable()
-export class JwtAuthGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
+export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
   constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
     super();
   }

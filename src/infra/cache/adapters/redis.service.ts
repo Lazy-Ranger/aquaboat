@@ -24,4 +24,8 @@ export class RedisService implements ICacheService {
   async set(key: string, value: string, ttl: number): Promise<void> {
     await this.redis.set(key, value, "EX", ttl);
   }
+
+  async delete(key: string): Promise<void> {
+    await this.redis.del(key);
+  }
 }
