@@ -9,6 +9,14 @@ export type IUserRegisterParams = IRegisterUserRequest & {
   provider: Provider;
 };
 
+export interface IJwtDecodedPayload {
+  iat: number;
+  exp: number;
+  iss: string;
+  jti: string;
+  aud: string | string[];
+}
+
 export interface IJwtAccessTokenPayload {
   sub: string;
   email: string;
@@ -28,4 +36,20 @@ export interface IJwtIdTokenPayload {
   firstName: string;
   lastName?: string;
   gender: string;
+}
+
+export type IUserSession = IJwtAccessTokenPayload & IJwtDecodedPayload;
+
+export type IUserRefreshTokenSession = IJwtRefreshTokenPayload &
+  IJwtDecodedPayload;
+
+export interface ILoggedInResponse {
+  accessToken: string;
+  idToken: string;
+  refreshToken: string;
+}
+
+export interface ILoginUserRequest {
+  email: string;
+  password: string;
 }

@@ -12,7 +12,7 @@ import {
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ExtractJwt } from "passport-jwt";
-import { IJwtRefreshTokenPayload } from "src/auth/contracts";
+import { IUserRefreshTokenSession } from "src/auth/contracts";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
@@ -24,8 +24,8 @@ import {
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
 import { JwtAccessTokenGuard } from "../../../guards/jwt-access-token.guard";
 import { JwtRefreshTokenGuard } from "../../../guards/jwt-refresh-token.guard";
-import { ClearRefreshTokenInCookiesInterceptor } from "../../../interceptors/clear-refresh-token-in-cookies.interceptor";
-import { SetRefreshTokenInCookiesInterceptor } from "../../../interceptors/set-refresh-token-in-cookies.interceptor";
+import { ClearRefreshTokenInterceptor } from "../../../interceptors/clear-refresh-token.interceptor";
+import { SetRefreshTokenInterceptor } from "../../../interceptors/set-refresh-token.interceptor";
 import { LoginUserDto, RegisterUserDto } from "../dtos";
 
 @Controller("/auth")
@@ -38,7 +38,7 @@ export class AuthController {
   ) {}
 
   @Post("/register")
-  @UseInterceptors(SetRefreshTokenInCookiesInterceptor)
+  @UseInterceptors(SetRefreshTokenInterceptor)
   async register(@Body() registerUserReq: RegisterUserDto) {
     const userRegisterParams = {
       ...registerUserReq,
@@ -46,8 +46,7 @@ export class AuthController {
     };
 
     try {
-      const data = await this.registerUserUseCase.execute(userRegisterParams);
-      return data;
+      return await this.registerUserUseCase.execute(userRegisterParams);
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
         throw new ConflictException(err);
@@ -57,11 +56,10 @@ export class AuthController {
   }
 
   @Post("/login")
-  async login(@Body() body: LoginUserDto, @Res() res: Response) {
+  @UseInterceptors(SetRefreshTokenInterceptor)
+  async login(@Body() body: LoginUserDto) {
     try {
-      const data = await this.loginUserUseCase.execute(body);
-      res.cookie("refreshToken", data.refreshToken);
-      return res.send(data);
+      return await this.loginUserUseCase.execute(body);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -75,7 +73,7 @@ export class AuthController {
   }
 
   @Post("/logout")
-  @UseInterceptors(ClearRefreshTokenInCookiesInterceptor)
+  @UseInterceptors(ClearRefreshTokenInterceptor)
   @UseGuards(JwtAccessTokenGuard)
   async logout(@Req() req: Request) {
     const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
@@ -97,7 +95,7 @@ export class AuthController {
   async refresh(@Req() req: Request, @Res() res: Response) {
     const refreshTokenParams = {
       refreshToken: req.cookies?.refreshToken as string,
-      user: req.user as IJwtRefreshTokenPayload
+      user: req.user as IUserRefreshTokenSession
     };
 
     try {

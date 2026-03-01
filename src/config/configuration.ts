@@ -2,6 +2,7 @@ import { APP_CONFIG } from "./app.config";
 import { BCRYPT_CONFIG } from "./bcrypt.config";
 import { DATABASE_CONFIG } from "./database.config";
 import { JWT_CONFIG } from "./jwt.config";
+import { PLATFORM_CONFIG } from "./platform.config";
 import { REDIS_CONFIG } from "./redis.config";
 
 export default [
@@ -9,5 +10,6 @@ export default [
   DATABASE_CONFIG,
   JWT_CONFIG,
   BCRYPT_CONFIG,
-  REDIS_CONFIG
+  REDIS_CONFIG,
+  PLATFORM_CONFIG
 ];

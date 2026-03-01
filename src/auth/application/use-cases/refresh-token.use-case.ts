@@ -18,14 +18,9 @@ export class RefreshTokensUseCase {
   ) {}
 
   async execute(params: IRefreshTokenParams): Promise<ILoggedInResponse> {
-    const { refreshToken } = params;
+    const { refreshToken, user: userSession } = params;
 
-    const userEmail = this.jwtService.decode(refreshToken) as {
-      email: string;
-      exp: number;
-    };
-
-    const user = await this.userService.findByEmail(params.user.email);
+    const user = await this.userService.findByEmail(userSession.email);
 
     if (!user) {
       throw new UnauthorizedError("User not found.");
@@ -33,8 +28,8 @@ export class RefreshTokensUseCase {
 
     const nowInSeconds = Date.now() / 1000;
 
-    if (userEmail.exp > nowInSeconds) {
-      const ttl = userEmail.exp - nowInSeconds;
+    if (userSession.exp > nowInSeconds) {
+      const ttl = userSession.exp - nowInSeconds;
       await this.cache.set(refreshToken, 1, Math.floor(ttl));
     }
 

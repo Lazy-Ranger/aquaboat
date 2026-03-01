@@ -24,6 +24,6 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
   }
 
   async validate(payload: IUserSession): Promise<IUserSession> {
-    return { ...payload };
+    return payload;
   }
 }

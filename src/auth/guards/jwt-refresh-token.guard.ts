@@ -1,12 +1,10 @@
 import {
   ExecutionContext,
-  Inject,
   Injectable,
   UnauthorizedException
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
-import { ICacheService } from "../../application/ports/cache.port";
-import { CACHE_SERVICE } from "../../tokens";
+import { RefreshTokenService } from "../application/services/refresh-token.service";
 import { UnauthorizedError } from "../errors";
 import { Strategy } from "../strategies/strategies.constants";
 
@@ -14,7 +12,7 @@ import { Strategy } from "../strategies/strategies.constants";
 export class JwtRefreshTokenGuard extends AuthGuard(
   Strategy.JWT_REFRESH_TOKEN
 ) {
-  constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
+  constructor(private readonly refreshTokenService: RefreshTokenService) {
     super();
   }
 
@@ -23,9 +21,7 @@ export class JwtRefreshTokenGuard extends AuthGuard(
     const request = context.switchToHttp().getRequest();
     const token = request?.cookies?.refreshToken;
 
-    const isTokenRevoked = await this.cache.exists(token);
-
-    if (isTokenRevoked !== 0) {
+    if (await this.refreshTokenService.isTokenRevoked(token)) {
       throw new UnauthorizedException(
         new UnauthorizedError("Token is expired")
       );

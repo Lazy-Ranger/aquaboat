@@ -1,7 +1,7 @@
-import { IJwtRefreshTokenPayload } from "./auth.types";
+import { IJwtDecodedPayload, IJwtRefreshTokenPayload } from "./auth.types";
 
 export interface IRefreshTokenParams {
   refreshToken: string;
 
-  user: IJwtRefreshTokenPayload;
+  user: IJwtRefreshTokenPayload & IJwtDecodedPayload;
 }

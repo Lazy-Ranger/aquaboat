@@ -6,6 +6,10 @@ export interface AppConfig {
   "app.port": number;
   "app.env": AppEnv;
   "app.host": string;
+  "app.isLocal": boolean;
+  "app.isDev": boolean;
+  "app.isStaging": boolean;
+  "app.isProd": boolean;
 }
 
 export const getAppConfig = () => {
@@ -14,7 +18,19 @@ export const getAppConfig = () => {
   return {
     port,
     env: process.env.NODE_ENV || "local",
-    host: process.env.APP_ENDPOINT || `http://localhost:${port}`
+    host: process.env.APP_ENDPOINT || `http://localhost:${port}`,
+    get isLocal() {
+      return this.env === "local";
+    },
+    get isDev() {
+      return this.env === "development";
+    },
+    get isStaging() {
+      return this.env === "staging";
+    },
+    get isProd() {
+      return this.env === "production";
+    }
   };
 };
 
