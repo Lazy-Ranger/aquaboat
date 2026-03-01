@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
 import { ILoggedInResponse, IUserRegisterParams } from "../../contracts";
 import { UserAlreadyRegisteredError } from "../../errors";
-import { IssueTokensUseCase } from "./issue-tokens.use.case";
+import { IssueTokensUseCase } from "./issue-tokens.use-case";
 
 @Injectable()
 export class RegisterUserUseCase {

@@ -4,7 +4,7 @@ import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { JwtConfig } from "../../config/jwt.config";
 import { IUserSession } from "../contracts";
-import { Strategy as JwtStrategy} from "./strategies.constants";
+import { Strategy as JwtStrategy } from "./strategies.constants";
 
 @Injectable()
 export class JwtRefreshAccessTokenStrategy extends PassportStrategy(
@@ -12,7 +12,7 @@ export class JwtRefreshAccessTokenStrategy extends PassportStrategy(
   JwtStrategy.JWT_REFRESH_TOKEN
 ) {
   constructor(configService: ConfigService<JwtConfig>) {
-    const secret = configService.getOrThrow('jwt.secret');
+    const secret = configService.getOrThrow("jwt.refreshTokenSecret");
 
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
@@ -20,8 +20,8 @@ export class JwtRefreshAccessTokenStrategy extends PassportStrategy(
       ]),
       ignoreExpiration: false,
       secretOrKey: secret,
-      issuer: configService.getOrThrow('jwt.issuer'),
-      audience: configService.getOrThrow('jwt.audience'),
+      issuer: configService.getOrThrow("jwt.issuer"),
+      audience: configService.getOrThrow("jwt.audience")
     });
   }
 
@@ -29,4 +29,4 @@ export class JwtRefreshAccessTokenStrategy extends PassportStrategy(
     return payload;
   }
 }
-5
+5;

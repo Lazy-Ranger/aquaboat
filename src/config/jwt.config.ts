@@ -2,9 +2,10 @@ import { registerAs } from "@nestjs/config";
 import { getAppConfig } from "./app.config";
 
 export interface JwtConfig {
-  "jwt.secret": string;
-  "jwt.accessExpireTime": string;
-  "jwt.refreshExpireTime": string;
+  "jwt.accessTokenSecret": string;
+  "jwt.refreshTokenSecret": string;
+  "jwt.accessTokenExpireTime": string;
+  "jwt.refreshTokenExpireTime": string;
   "jwt.issuer": string;
   "jwt.audience": string[];
 }
@@ -13,9 +14,10 @@ export const getJwtConfig = () => {
   const appConfig = getAppConfig();
 
   return {
-    secret: process.env.JWT_SECRET,
-    accessExpireTime: process.env.JWT_EXPIRE_TIME,
-    refreshExpireTime: process.env.JWT_REFRESH_TIME,
+    accessTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
+    refreshTokenSecret: process.env.JWT_REFRESH_TOKEN_SECRET,
+    accessTokenExpireTime: process.env.JWT_ACCESS_TOKEN_EXPIRE_TIME,
+    refreshTokenExpireTime: process.env.JWT_REFRESH_TOKEN_EXPIRE_TIME,
     issuer: process.env.JWT_ISSUER || appConfig.host,
     audience: ["*"]
   };

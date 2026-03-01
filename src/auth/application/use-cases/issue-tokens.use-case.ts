@@ -3,9 +3,14 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { randomUUID } from "crypto";
 import { StringValue } from "ms";
-import { JwtConfig } from "src/config/jwt.config";
+import { JwtConfig } from "../../../config/jwt.config";
 import { IUser } from "../../../user/contracts";
-import { ILoggedInResponse } from "../../contracts";
+import {
+  IJwtAccessTokenPayload,
+  IJwtIdTokenPayload,
+  IJwtRefreshTokenPayload,
+  ILoggedInResponse
+} from "../../contracts";
 
 @Injectable()
 export class IssueTokensUseCase {
@@ -14,14 +19,14 @@ export class IssueTokensUseCase {
     private readonly config: ConfigService<JwtConfig>
   ) {}
 
-  private createAccessTokenPayload(user: IUser) {
+  private createAccessTokenPayload(user: IUser): IJwtAccessTokenPayload {
     return {
       sub: user.id,
       email: user.email
     };
   }
 
-  private createIdTokenPayload(user: IUser) {
+  private createIdTokenPayload(user: IUser): IJwtIdTokenPayload {
     return {
       sub: user.id,
       email: user.email,
@@ -34,7 +39,7 @@ export class IssueTokensUseCase {
     };
   }
 
-  private createRefreshTokenPayload(user: IUser) {
+  private createRefreshTokenPayload(user: IUser): IJwtRefreshTokenPayload {
     return {
       sub: user.id,
       email: user.email
@@ -51,11 +56,19 @@ export class IssueTokensUseCase {
     const jti = randomUUID();
     const iss = this.config.getOrThrow<string>("jwt.issuer");
     const aud = this.config.getOrThrow<string[]>("jwt.audience");
-    const accessExpireTime = this.config.getOrThrow<StringValue>(
-      "jwt.accessExpireTime"
+
+    const accessTokenSecret = this.config.getOrThrow<string>(
+      "jwt.accessTokenSecret"
     );
-    const refreshExpireTime = this.config.getOrThrow<StringValue>(
-      "jwt.refreshExpireTime"
+    const accessTokenExpireTime = this.config.getOrThrow<StringValue>(
+      "jwt.accessTokenExpireTime"
+    );
+
+    const refreshTokenSecret = this.config.getOrThrow<string>(
+      "jwt.refreshTokenSecret"
+    );
+    const refreshTokenExpireTime = this.config.getOrThrow<StringValue>(
+      "jwt.refreshTokenExpireTime"
     );
 
     const accessToken = await this.jwtService.signAsync(
@@ -66,16 +79,23 @@ export class IssueTokensUseCase {
         aud
       },
       {
-        expiresIn: accessExpireTime
+        secret: accessTokenSecret,
+        expiresIn: accessTokenExpireTime
       }
     );
 
-    const idToken = await this.jwtService.signAsync({
-      ...idTokenPayload,
-      jti,
-      iss,
-      aud
-    });
+    const idToken = await this.jwtService.signAsync(
+      {
+        ...idTokenPayload,
+        jti,
+        iss,
+        aud
+      },
+      {
+        secret: accessTokenSecret,
+        expiresIn: accessTokenExpireTime
+      }
+    );
 
     const refreshToken = await this.jwtService.signAsync(
       {
@@ -85,7 +105,8 @@ export class IssueTokensUseCase {
         aud
       },
       {
-        expiresIn: refreshExpireTime
+        secret: refreshTokenSecret,
+        expiresIn: refreshTokenExpireTime
       }
     );
 

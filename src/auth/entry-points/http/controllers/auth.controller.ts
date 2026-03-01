@@ -7,10 +7,12 @@ import {
   Req,
   Res,
   UnauthorizedException,
-  UseGuards
+  UseGuards,
+  UseInterceptors
 } from "@nestjs/common";
 import { Request, Response } from "express";
 import { ExtractJwt } from "passport-jwt";
+import { IJwtRefreshTokenPayload } from "src/auth/contracts";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
@@ -22,6 +24,8 @@ import {
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
 import { JwtAccessTokenGuard } from "../../../guards/jwt-access-token.guard";
 import { JwtRefreshTokenGuard } from "../../../guards/jwt-refresh-token.guard";
+import { ClearRefreshTokenInCookiesInterceptor } from "../../../interceptors/clear-refresh-token-in-cookies.interceptor";
+import { SetRefreshTokenInCookiesInterceptor } from "../../../interceptors/set-refresh-token-in-cookies.interceptor";
 import { LoginUserDto, RegisterUserDto } from "../dtos";
 
 @Controller("/auth")
@@ -34,10 +38,8 @@ export class AuthController {
   ) {}
 
   @Post("/register")
-  async register(
-    @Body() registerUserReq: RegisterUserDto,
-    @Res() res: Response
-  ) {
+  @UseInterceptors(SetRefreshTokenInCookiesInterceptor)
+  async register(@Body() registerUserReq: RegisterUserDto) {
     const userRegisterParams = {
       ...registerUserReq,
       provider: Provider.PASSWORD
@@ -45,11 +47,10 @@ export class AuthController {
 
     try {
       const data = await this.registerUserUseCase.execute(userRegisterParams);
-      res.cookie("refreshToken", data.refreshToken);
-      return res.send(data);
+      return data;
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
-        return new ConflictException(err);
+        throw new ConflictException(err);
       }
       return err;
     }
@@ -74,8 +75,9 @@ export class AuthController {
   }
 
   @Post("/logout")
+  @UseInterceptors(ClearRefreshTokenInCookiesInterceptor)
   @UseGuards(JwtAccessTokenGuard)
-  async logout(@Req() req: Request, @Res() res: Response) {
+  async logout(@Req() req: Request) {
     const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
     const refreshToken = (req as any).cookies?.refreshToken as string;
     try {
@@ -83,8 +85,7 @@ export class AuthController {
         accessToken,
         refreshToken
       );
-      res.cookie("refreshToken", "");
-      res.send(data);
+      return data;
     } catch (err) {
       console.log(err);
       throw err;
@@ -94,9 +95,16 @@ export class AuthController {
   @Post("/refresh")
   @UseGuards(JwtRefreshTokenGuard)
   async refresh(@Req() req: Request, @Res() res: Response) {
+    const refreshTokenParams = {
+      refreshToken: req.cookies?.refreshToken as string,
+      user: req.user as IJwtRefreshTokenPayload
+    };
+
     try {
-      const data = await this.refreshTokenUC.execute(req);
+      const data = await this.refreshTokenUC.execute(refreshTokenParams);
+
       res.cookie("refreshToken", data.refreshToken);
+
       res.send(data);
     } catch (err) {
       if (err instanceof UnauthorizedError) {
