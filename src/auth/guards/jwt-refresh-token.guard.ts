@@ -4,6 +4,7 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { Request } from "express";
 import { RefreshTokenService } from "../application/services/refresh-token.service";
 import { UnauthorizedError } from "../errors";
 import { Strategy } from "../strategies/strategies.constants";
@@ -18,14 +19,21 @@ export class JwtRefreshTokenGuard extends AuthGuard(
 
   async canActivate(context: ExecutionContext) {
     await super.canActivate(context);
-    const request = context.switchToHttp().getRequest();
-    const token = request?.cookies?.refreshToken;
+    const request = context.switchToHttp().getRequest<Request>();
+    const token = this.refreshTokenService.extractFromCookie(request);
 
-    if (await this.refreshTokenService.isTokenRevoked(token)) {
+    if (!token || (await this.refreshTokenService.isTokenRevoked(token))) {
       throw new UnauthorizedException(
         new UnauthorizedError("Token is expired")
       );
     }
+
+    const userRefreshTokenClaim = request.user; // decoded via passport
+
+    request.user = {
+      id: token,
+      claim: userRefreshTokenClaim
+    };
 
     return true;
   }

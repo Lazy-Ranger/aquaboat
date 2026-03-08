@@ -1,12 +1,14 @@
 import { ValidationPipe } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { NestFactory } from "@nestjs/core";
+import { NestExpressApplication } from "@nestjs/platform-express";
+import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
+import { userAgentMiddleware } from "./common/middlewares/user-agent.middleware";
 import { AppConfig, AppEnv } from "./config/app.config";
-import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   const configService = app.get(ConfigService<AppConfig>);
 
@@ -16,16 +18,17 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
-      transform: true,
-    }),
+      transform: true
+    })
   );
 
   app.use(cookieParser());
+  app.use(userAgentMiddleware());
 
   await app.listen(port);
 
   console.log(
-    `Application is running on: http://localhost:${port} in env ${appEnv}`,
+    `Application is running on: http://localhost:${port} in env ${appEnv}`
   );
 }
 bootstrap();

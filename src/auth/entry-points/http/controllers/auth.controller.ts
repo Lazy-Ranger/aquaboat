@@ -5,14 +5,15 @@ import {
   NotFoundException,
   Post,
   Req,
-  Res,
   UnauthorizedException,
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
-import { Request, Response } from "express";
 import { ExtractJwt } from "passport-jwt";
-import { IUserRefreshTokenSession } from "src/auth/contracts";
+import { RefreshTokenService } from "src/auth/application/services/refresh-token.service";
+import { IRefreshTokenParams, IUserLoginParams } from "src/auth/contracts";
+import { Principal } from "src/common/decorators";
+import { IHttpRequest, IPrincipal } from "src/common/interfaces";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
@@ -34,15 +35,20 @@ export class AuthController {
     private readonly registerUserUseCase: RegisterUserUseCase,
     private readonly loginUserUseCase: LoginUserUseCase,
     private readonly logoutUserUseCase: LogoutUserUseCase,
-    private readonly refreshTokenUC: RefreshTokensUseCase
+    private readonly refreshTokenUC: RefreshTokensUseCase,
+    private readonly refreshTokenService: RefreshTokenService
   ) {}
 
   @Post("/register")
   @UseInterceptors(SetRefreshTokenInterceptor)
-  async register(@Body() registerUserReq: RegisterUserDto) {
+  async register(
+    @Body() registerUserReq: RegisterUserDto,
+    @Req() req: IHttpRequest
+  ) {
     const userRegisterParams = {
       ...registerUserReq,
-      provider: Provider.PASSWORD
+      provider: Provider.PASSWORD,
+      clientRequestInfo: req.clientRequestInfo
     };
 
     try {
@@ -57,9 +63,14 @@ export class AuthController {
 
   @Post("/login")
   @UseInterceptors(SetRefreshTokenInterceptor)
-  async login(@Body() body: LoginUserDto) {
+  async login(@Body() loginUserReq: LoginUserDto, @Req() req: IHttpRequest) {
+    const loginParams: IUserLoginParams = {
+      ...loginUserReq,
+      clientRequestInfo: req.clientRequestInfo
+    };
+
     try {
-      return await this.loginUserUseCase.execute(body);
+      return await this.loginUserUseCase.execute(loginParams);
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);
@@ -75,35 +86,38 @@ export class AuthController {
   @Post("/logout")
   @UseInterceptors(ClearRefreshTokenInterceptor)
   @UseGuards(JwtAccessTokenGuard)
-  async logout(@Req() req: Request) {
+  logout(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
     const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
-    const refreshToken = (req as any).cookies?.refreshToken as string;
+
+    const refreshToken = this.refreshTokenService.extractFromCookie(
+      req
+    ) as string;
+
     try {
-      const data = await this.logoutUserUseCase.execute(
+      return this.logoutUserUseCase.execute(principal, {
         accessToken,
         refreshToken
-      );
-      return data;
+      });
     } catch (err) {
-      console.log(err);
       throw err;
     }
   }
 
   @Post("/refresh")
   @UseGuards(JwtRefreshTokenGuard)
-  async refresh(@Req() req: Request, @Res() res: Response) {
-    const refreshTokenParams = {
-      refreshToken: req.cookies?.refreshToken as string,
-      user: req.user as IUserRefreshTokenSession
+  @UseInterceptors(SetRefreshTokenInterceptor)
+  async refresh(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
+    const refreshToken = this.refreshTokenService.extractFromCookie(
+      req
+    ) as string;
+
+    const refreshTokenParams: IRefreshTokenParams = {
+      refreshToken,
+      clientRequestInfo: req.clientRequestInfo
     };
 
     try {
-      const data = await this.refreshTokenUC.execute(refreshTokenParams);
-
-      res.cookie("refreshToken", data.refreshToken);
-
-      res.send(data);
+      return this.refreshTokenUC.execute(principal, refreshTokenParams);
     } catch (err) {
       if (err instanceof UnauthorizedError) {
         throw new UnauthorizedException(err);

@@ -6,6 +6,7 @@ import { StringValue } from "ms";
 import { JwtConfig } from "../../../config/jwt.config";
 import { IUser } from "../../../user/contracts";
 import {
+  IIssueTokensParams,
   IJwtAccessTokenPayload,
   IJwtIdTokenPayload,
   IJwtRefreshTokenPayload,
@@ -46,7 +47,9 @@ export class IssueTokensUseCase {
     };
   }
 
-  async execute(user: IUser): Promise<ILoggedInResponse> {
+  async execute(params: IIssueTokensParams): Promise<ILoggedInResponse> {
+    const { user, clientRequestInfo } = params;
+
     const accessTokenPayload = this.createAccessTokenPayload(user);
 
     const idTokenPayload = this.createIdTokenPayload(user);

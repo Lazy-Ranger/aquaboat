@@ -3,7 +3,7 @@ import { ConfigService } from "@nestjs/config";
 import { PassportStrategy } from "@nestjs/passport";
 import { ExtractJwt, Strategy } from "passport-jwt";
 import { JwtConfig } from "../../config/jwt.config";
-import { IUserSession } from "../contracts";
+import { IUserAccessTokenClaim } from "../contracts";
 import { Strategy as JwtStrategy } from "./strategies.constants";
 
 @Injectable()
@@ -23,7 +23,9 @@ export class JwtAccessTokenStrategy extends PassportStrategy(
     });
   }
 
-  async validate(payload: IUserSession): Promise<IUserSession> {
+  async validate(
+    payload: IUserAccessTokenClaim
+  ): Promise<IUserAccessTokenClaim> {
     return payload;
   }
 }

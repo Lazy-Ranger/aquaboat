@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
-import { ILoggedInResponse, ILoginUserRequest } from "../../contracts";
+import { ILoggedInResponse, IUserLoginParams } from "../../contracts";
 import { UnauthorizedError } from "../../errors";
 import { IssueTokensUseCase } from "./issue-tokens.use-case";
 
@@ -11,7 +11,7 @@ export class LoginUserUseCase {
     private readonly issueTokensUseCase: IssueTokensUseCase
   ) {}
 
-  async execute(params: ILoginUserRequest): Promise<ILoggedInResponse> {
+  async execute(params: IUserLoginParams): Promise<ILoggedInResponse> {
     const { email, password } = params;
 
     const user = await this.userService.validateByEmailAndPassword(
@@ -23,6 +23,9 @@ export class LoginUserUseCase {
       throw new UnauthorizedError("Email or password is incorrect.");
     }
 
-    return this.issueTokensUseCase.execute(user);
+    return this.issueTokensUseCase.execute({
+      user,
+      clientRequestInfo: params.clientRequestInfo
+    });
   }
 }

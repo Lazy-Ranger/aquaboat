@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
-import { CookieOptions, Response } from "express";
+import { CookieOptions, Request, Response } from "express";
 import * as ms from "ms";
 import { StringValue } from "ms";
 import { ICacheService } from "src/application/ports/cache.port";
@@ -36,6 +36,10 @@ export class RefreshTokenService {
   }
 
   public async isTokenRevoked(refreshToken: string) {
+    if (!refreshToken) {
+      return true;
+    }
+
     const isTokenRevoked = await this.cache.exists(refreshToken);
 
     return isTokenRevoked !== 0;
@@ -54,5 +58,9 @@ export class RefreshTokenService {
       this.refreshTokenCookieName,
       this.refreshTokenCookieOptions
     );
+  }
+
+  public extractFromCookie(request: Request): string | null {
+    return request?.cookies?.[this.refreshTokenCookieName];
   }
 }

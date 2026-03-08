@@ -20,6 +20,9 @@ export class RegisterUserUseCase {
 
     const user = await this.userService.create(params);
 
-    return this.issueTokensUseCase.execute(user);
+    return this.issueTokensUseCase.execute({
+      user,
+      clientRequestInfo: params.clientRequestInfo
+    });
   }
 }

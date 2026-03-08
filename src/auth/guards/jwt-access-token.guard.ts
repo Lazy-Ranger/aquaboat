@@ -5,6 +5,7 @@ import {
   UnauthorizedException
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
+import { Request } from "express";
 import { ExtractJwt } from "passport-jwt";
 import { ICacheService } from "../../application/ports/cache.port";
 import { CACHE_SERVICE } from "../../tokens";
@@ -20,7 +21,7 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
   async canActivate(context: ExecutionContext) {
     await super.canActivate(context);
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<Request>();
     const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request) as string;
 
     const isTokenRevoked = await this.cache.exists(token);
@@ -30,6 +31,13 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
         new UnauthorizedError("Token is expired")
       );
     }
+
+    const userAccessTokenClaim = request.user; // decoded via passport
+
+    request.user = {
+      id: token,
+      claim: userAccessTokenClaim
+    };
 
     return true;
   }
