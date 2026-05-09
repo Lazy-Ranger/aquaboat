@@ -1,7 +1,7 @@
 import { IUserAgent } from "../../../common/interfaces";
-import { IAuthSession } from "../../contracts";
+import { ISession } from "../../contracts";
 
-export class AuthSession implements IAuthSession {
+export class Session implements ISession {
   readonly id: string;
 
   jti: string;
@@ -13,6 +13,8 @@ export class AuthSession implements IAuthSession {
   accessToken: string;
 
   refreshToken: string;
+
+  idToken: string;
 
   ip: string[];
 
@@ -29,6 +31,7 @@ export class AuthSession implements IAuthSession {
     this.email = props.email;
     this.accessToken = props.accessToken;
     this.refreshToken = props.refreshToken;
+    this.idToken = props.idToken;
     this.ip = props.ip;
     this.userAgent = props.userAgent;
     this.createdAt = props.createdAt;

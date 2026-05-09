@@ -3,7 +3,11 @@ export interface ICacheService {
 
   exists(key: string): Promise<number>;
 
-  set(key: string, value: string | Buffer | number, ttl: number): Promise<void>;
+  set(
+    key: string,
+    value: string | Buffer | number,
+    ttl: number | null
+  ): Promise<void>;
 
   delete(key: string): Promise<void>;
 }

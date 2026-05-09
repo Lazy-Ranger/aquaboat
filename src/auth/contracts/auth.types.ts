@@ -1,4 +1,4 @@
-import { IUserCreateParams } from "../../user/contracts";
+import { IUser, IUserCreateParams } from "../../user/contracts";
 
 export type IRegisterUserRequest = Omit<
   IUserCreateParams,
@@ -14,4 +14,6 @@ export interface ILoggedInResponse {
   accessToken: string;
   idToken: string;
   refreshToken: string;
+  jti: string;
+  user: IUser;
 }

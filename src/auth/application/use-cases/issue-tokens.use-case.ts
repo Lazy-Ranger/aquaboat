@@ -10,7 +10,7 @@ import {
   IJwtAccessTokenPayload,
   IJwtIdTokenPayload,
   IJwtRefreshTokenPayload,
-  ILoggedInResponse
+  IssueTokenResponse
 } from "../../contracts";
 
 @Injectable()
@@ -47,7 +47,7 @@ export class IssueTokensUseCase {
     };
   }
 
-  async execute(params: IIssueTokensParams): Promise<ILoggedInResponse> {
+  async execute(params: IIssueTokensParams): Promise<IssueTokenResponse> {
     const { user, clientRequestInfo } = params;
 
     const accessTokenPayload = this.createAccessTokenPayload(user);
@@ -116,7 +116,8 @@ export class IssueTokensUseCase {
     return {
       accessToken,
       idToken,
-      refreshToken
+      refreshToken,
+      jti
     };
   }
 }

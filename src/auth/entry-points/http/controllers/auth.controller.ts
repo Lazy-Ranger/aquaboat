@@ -11,12 +11,17 @@ import {
 } from "@nestjs/common";
 import { ExtractJwt } from "passport-jwt";
 import { RefreshTokenService } from "src/auth/application/services/refresh-token.service";
-import { IRefreshTokenParams, IUserLoginParams } from "src/auth/contracts";
+import {
+  IRefreshTokenParams,
+  ISessionCreateParams,
+  IUserLoginParams
+} from "src/auth/contracts";
 import { Principal } from "src/common/decorators";
 import { IHttpRequest, IPrincipal } from "src/common/interfaces";
 import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import {
+  CreateSessionUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
   RefreshTokensUseCase,
@@ -36,7 +41,8 @@ export class AuthController {
     private readonly loginUserUseCase: LoginUserUseCase,
     private readonly logoutUserUseCase: LogoutUserUseCase,
     private readonly refreshTokenUC: RefreshTokensUseCase,
-    private readonly refreshTokenService: RefreshTokenService
+    private readonly refreshTokenService: RefreshTokenService,
+    private readonly createSessionUseCase: CreateSessionUseCase
   ) {}
 
   @Post("/register")
@@ -52,7 +58,27 @@ export class AuthController {
     };
 
     try {
-      return await this.registerUserUseCase.execute(userRegisterParams);
+      const loggedInResponse =
+        await this.registerUserUseCase.execute(userRegisterParams);
+
+      const sessionParams: ISessionCreateParams = {
+        userId: loggedInResponse.user.id,
+        jti: loggedInResponse.jti,
+        accessToken: loggedInResponse.accessToken,
+        refreshToken: loggedInResponse.refreshToken,
+        idToken: loggedInResponse.idToken,
+        ip: userRegisterParams.clientRequestInfo.ip,
+        userAgent: userRegisterParams.clientRequestInfo.userAgent,
+        email: loggedInResponse.user.email
+      };
+
+      await this.createSessionUseCase.execute(sessionParams);
+
+      return {
+        accessToken: loggedInResponse.accessToken,
+        idToken: loggedInResponse.idToken,
+        refreshToken: loggedInResponse.refreshToken
+      };
     } catch (err) {
       if (err instanceof UserAlreadyRegisteredError) {
         throw new ConflictException(err);
@@ -70,7 +96,26 @@ export class AuthController {
     };
 
     try {
-      return await this.loginUserUseCase.execute(loginParams);
+      const loggedInResponse = await this.loginUserUseCase.execute(loginParams);
+
+      const sessionParams: ISessionCreateParams = {
+        userId: loggedInResponse.user.id,
+        jti: loggedInResponse.jti,
+        accessToken: loggedInResponse.accessToken,
+        refreshToken: loggedInResponse.refreshToken,
+        idToken: loggedInResponse.idToken,
+        ip: loginParams.clientRequestInfo.ip,
+        userAgent: loginParams.clientRequestInfo.userAgent,
+        email: loggedInResponse.user.email
+      };
+
+      await this.createSessionUseCase.execute(sessionParams);
+
+      return {
+        accessToken: loggedInResponse.accessToken,
+        idToken: loggedInResponse.idToken,
+        refreshToken: loggedInResponse.refreshToken
+      };
     } catch (err) {
       if (err instanceof UserNotFoundError) {
         throw new NotFoundException(err);

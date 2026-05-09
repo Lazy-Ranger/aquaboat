@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { IAuthSession } from "../../../../contracts";
+import { ISession } from "../../../../contracts";
 import { UserAgentDocument } from "./auth-user.agent.schema";
 
 export type AuthSessionDocument = HydratedDocument<AuthSessionSchema>;
 
-export interface IAuthSessionPersistence extends Omit<IAuthSession, "id"> {}
+export interface IAuthSessionPersistence extends Omit<ISession, "id"> {}
 
 @Schema({
   timestamps: true,
@@ -26,6 +26,9 @@ export class AuthSessionSchema implements IAuthSessionPersistence {
 
   @Prop({ required: true })
   refreshToken!: string;
+
+  @Prop({ required: true })
+  idToken!: string;
 
   @Prop({ type: [String], required: true })
   ip!: string[];

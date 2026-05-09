@@ -1,1 +1,1 @@
-export const AUTH_REPO = "AUTH_REPO" as const;
+export const SESSION_REPO = "SESSION_REPO" as const;

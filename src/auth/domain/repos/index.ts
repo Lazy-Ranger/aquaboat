@@ -1,1 +1,1 @@
-export * from "./auth.repo.interface";
+export * from "./session.repo.interface";

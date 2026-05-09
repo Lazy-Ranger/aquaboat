@@ -1,3 +1,4 @@
+import { CreateSessionUseCase } from "./create-session.use-case";
 import { IssueTokensUseCase } from "./issue-tokens.use-case";
 import { LoginUserUseCase } from "./login-user.use-case";
 import { LogoutUserUseCase } from "./logout-user.use-case";
@@ -9,5 +10,6 @@ export default [
   RegisterUserUseCase,
   LoginUserUseCase,
   LogoutUserUseCase,
-  RefreshTokensUseCase
+  RefreshTokensUseCase,
+  CreateSessionUseCase
 ];

@@ -20,7 +20,7 @@ export class RefreshTokensUseCase {
     principal: IPrincipal,
     params: IRefreshTokenParams
   ): Promise<ILoggedInResponse> {
-    const { refreshToken } = params;
+    const { refreshToken: token } = params;
 
     const claim = principal.claim;
 
@@ -34,12 +34,14 @@ export class RefreshTokensUseCase {
 
     if (claim.exp > nowInSeconds) {
       const ttl = claim.exp - nowInSeconds;
-      await this.cache.set(refreshToken, 1, Math.floor(ttl));
+      await this.cache.set(token, 1, Math.floor(ttl));
     }
 
-    return this.issueTokensUseCase.execute({
-      user,
-      clientRequestInfo: params.clientRequestInfo
-    });
+    const { accessToken, refreshToken, idToken, jti } =
+      await this.issueTokensUseCase.execute({
+        user,
+        clientRequestInfo: params.clientRequestInfo
+      });
+    return { accessToken, idToken, refreshToken, jti, user };
   }
 }

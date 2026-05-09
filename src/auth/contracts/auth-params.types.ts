@@ -14,6 +14,13 @@ export interface IIssueTokensParams {
   clientRequestInfo: IClientRequestInfo;
 }
 
+export interface IssueTokenResponse {
+  accessToken: string;
+  idToken: string;
+  refreshToken: string;
+  jti: string;
+}
+
 export interface IUserRegisterParams extends IRegisterUserRequest {
   provider: Provider;
 

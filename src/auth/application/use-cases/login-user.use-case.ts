@@ -23,9 +23,12 @@ export class LoginUserUseCase {
       throw new UnauthorizedError("Email or password is incorrect.");
     }
 
-    return this.issueTokensUseCase.execute({
-      user,
-      clientRequestInfo: params.clientRequestInfo
-    });
+    const { accessToken, refreshToken, idToken, jti } =
+      await this.issueTokensUseCase.execute({
+        user,
+        clientRequestInfo: params.clientRequestInfo
+      });
+
+    return { accessToken, idToken, refreshToken, jti, user };
   }
 }
