@@ -23,7 +23,7 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
     const request = context.switchToHttp().getRequest<Request>();
     const userAccessTokenClaim = request.user as Record<string, string>;
 
-    const jti = userAccessTokenClaim?.jti;
+    const jti = `revoked_${userAccessTokenClaim?.jti}`;
 
     const isTokenRevoked = await this.cache.exists(jti);
 
