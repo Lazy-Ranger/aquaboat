@@ -6,7 +6,7 @@ export interface ICacheService {
   set(
     key: string,
     value: string | Buffer | number,
-    ttl: number | null
+    ttl?: number | null
   ): Promise<void>;
 
   delete(key: string): Promise<void>;

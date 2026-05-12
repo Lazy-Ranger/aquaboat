@@ -6,7 +6,6 @@ import {
 } from "@nestjs/common";
 import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
-import { ExtractJwt } from "passport-jwt";
 import { ICacheService } from "../../application/ports/cache.port";
 import { CACHE_SERVICE } from "../../tokens";
 import { UnauthorizedError } from "../errors";
@@ -22,9 +21,11 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
     await super.canActivate(context);
 
     const request = context.switchToHttp().getRequest<Request>();
-    const token = ExtractJwt.fromAuthHeaderAsBearerToken()(request) as string;
+    const userAccessTokenClaim = request.user as Record<string, string>;
 
-    const isTokenRevoked = await this.cache.exists(token);
+    const jti = userAccessTokenClaim?.jti;
+
+    const isTokenRevoked = await this.cache.exists(jti);
 
     if (isTokenRevoked !== 0) {
       throw new UnauthorizedException(
@@ -32,10 +33,8 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
       );
     }
 
-    const userAccessTokenClaim = request.user; // decoded via passport
-
     request.user = {
-      id: token,
+      id: userAccessTokenClaim.email,
       claim: userAccessTokenClaim
     };
 

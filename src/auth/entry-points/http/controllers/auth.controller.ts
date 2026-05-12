@@ -23,6 +23,7 @@ import { UserNotFoundError } from "../../../../user/errors";
 import {
   CreateSessionUseCase,
   LoginUserUseCase,
+  LogoutUserAllDeviceUseCase,
   LogoutUserUseCase,
   RefreshTokensUseCase,
   RegisterUserUseCase
@@ -42,7 +43,8 @@ export class AuthController {
     private readonly logoutUserUseCase: LogoutUserUseCase,
     private readonly refreshTokenUC: RefreshTokensUseCase,
     private readonly refreshTokenService: RefreshTokenService,
-    private readonly createSessionUseCase: CreateSessionUseCase
+    private readonly createSessionUseCase: CreateSessionUseCase,
+    private readonly logoutUserAllDevice: LogoutUserAllDeviceUseCase
   ) {}
 
   @Post("/register")
@@ -143,6 +145,17 @@ export class AuthController {
         accessToken,
         refreshToken
       });
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  @Post("/logout-all")
+  @UseInterceptors(ClearRefreshTokenInterceptor)
+  @UseGuards(JwtAccessTokenGuard)
+  logoutAll(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
+    try {
+      return this.logoutUserAllDevice.execute(principal.id);
     } catch (err) {
       throw err;
     }
