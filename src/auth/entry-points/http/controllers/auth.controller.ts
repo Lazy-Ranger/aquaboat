@@ -18,7 +18,6 @@ import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import { AuthService } from "../../../application/services/auth.service";
 import {
-  CreateSessionUseCase,
   LoginUserUseCase,
   LogoutUserAllDeviceUseCase,
   LogoutUserUseCase,
@@ -41,7 +40,6 @@ export class AuthController {
     private readonly logoutUserUseCase: LogoutUserUseCase,
     private readonly refreshTokenUC: RefreshTokensUseCase,
     private readonly refreshTokenService: RefreshTokenService,
-    private readonly createSessionUseCase: CreateSessionUseCase,
     private readonly logoutUserAllDevice: LogoutUserAllDeviceUseCase
   ) {}
 

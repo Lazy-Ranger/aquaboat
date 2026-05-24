@@ -1,4 +1,3 @@
-export * from "./create-session.use-case";
 export * from "./issue-tokens.use-case";
 export * from "./login-user.use-case";
 export * from "./logout-all-device.user-case";
