@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
-import { ILoggedInResponse, IUserRegisterParams } from "../../contracts";
+import { IUserRegisterParams, IUserResponse } from "../../contracts";
 import { UserAlreadyRegisteredError } from "../../errors";
 import { IssueTokensUseCase } from "./issue-tokens.use-case";
 
@@ -11,7 +11,7 @@ export class RegisterUserUseCase {
     private readonly issueTokensUseCase: IssueTokensUseCase
   ) {}
 
-  async execute(params: IUserRegisterParams): Promise<ILoggedInResponse> {
+  async execute(params: IUserRegisterParams): Promise<IUserResponse> {
     const userExists = await this.userService.findByEmail(params.email);
 
     if (userExists) {

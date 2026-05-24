@@ -1,6 +1,6 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { ICacheService } from "src/application/ports/cache.port";
-import { ILoggedInResponse } from "src/auth/contracts";
+import { IUserResponse } from "src/auth/contracts";
 import { IRefreshTokenParams } from "src/auth/contracts/auth-params.types";
 import { IPrincipal } from "src/common/interfaces";
 import { CACHE_SERVICE } from "../../../tokens";
@@ -19,7 +19,7 @@ export class RefreshTokensUseCase {
   async execute(
     principal: IPrincipal,
     params: IRefreshTokenParams
-  ): Promise<ILoggedInResponse> {
+  ): Promise<IUserResponse> {
     const { refreshToken: token } = params;
 
     const claim = principal.claim;

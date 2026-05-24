@@ -8,12 +8,16 @@ import { AuthGuard } from "@nestjs/passport";
 import { Request } from "express";
 import { ICacheService } from "../../application/ports/cache.port";
 import { CACHE_SERVICE } from "../../tokens";
+import { SessionService } from "../application/services/session.service";
 import { UnauthorizedError } from "../errors";
 import { Strategy } from "../strategies/strategies.constants";
 
 @Injectable()
 export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
-  constructor(@Inject(CACHE_SERVICE) private readonly cache: ICacheService) {
+  constructor(
+    @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+    private readonly sessionService: SessionService
+  ) {
     super();
   }
 

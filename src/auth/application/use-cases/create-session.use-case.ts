@@ -40,24 +40,15 @@ export class CreateSessionUseCase {
     };
 
     const isDataExists = await this.cache.get(cacheKey);
-    const ONE_YEAR_IN_SECONDS = 31536000;
 
     if (isDataExists) {
       const sessions = JSON.parse(isDataExists);
 
       sessions.push(sessionData);
 
-      await this.cache.set(
-        cacheKey,
-        JSON.stringify(sessions),
-        ONE_YEAR_IN_SECONDS
-      );
+      await this.cache.set(cacheKey, JSON.stringify(sessions));
     } else {
-      await this.cache.set(
-        cacheKey,
-        JSON.stringify([sessionData]),
-        ONE_YEAR_IN_SECONDS
-      );
+      await this.cache.set(cacheKey, JSON.stringify([sessionData]));
     }
 
     return this.sessionRepo.create(session);

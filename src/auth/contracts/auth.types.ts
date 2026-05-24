@@ -14,6 +14,9 @@ export interface ILoggedInResponse {
   accessToken: string;
   idToken: string;
   refreshToken: string;
+}
+
+export interface IUserResponse extends ILoggedInResponse {
   jti: string;
   user: IUser;
 }

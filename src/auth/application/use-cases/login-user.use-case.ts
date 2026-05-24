@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { UserService } from "../../../user/application/services";
-import { ILoggedInResponse, IUserLoginParams } from "../../contracts";
+import { IUserLoginParams, IUserResponse } from "../../contracts";
 import { UnauthorizedError } from "../../errors";
 import { IssueTokensUseCase } from "./issue-tokens.use-case";
 
@@ -11,7 +11,7 @@ export class LoginUserUseCase {
     private readonly issueTokensUseCase: IssueTokensUseCase
   ) {}
 
-  async execute(params: IUserLoginParams): Promise<ILoggedInResponse> {
+  async execute(params: IUserLoginParams): Promise<IUserResponse> {
     const { email, password } = params;
 
     const user = await this.userService.validateByEmailAndPassword(
