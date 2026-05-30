@@ -9,6 +9,13 @@ import { Session } from "../../domain/entities";
 import { ISessionRepo } from "../../domain/repos";
 import { SESSION_REPO } from "../../tokens";
 
+interface ICachedSession {
+  jti: string;
+  accessToken: string;
+  refreshToken: string;
+  idToken: string;
+}
+
 @Injectable()
 export class SessionService {
   private readonly sessionCacheKeyPrefix = `session_` as const;
@@ -37,25 +44,24 @@ export class SessionService {
       accessToken: params.accessToken,
       refreshToken: params.refreshToken,
       ip: params.ip,
-      userAgent: params.userAgent,
-      createdAt: new Date(),
-      updatedAt: new Date()
+      userAgent: params.userAgent
     });
+
+    const savedSession = await this.sessionRepo.create(session);
 
     const cacheKey = this.getSessionCacheKey(params.userId);
 
-    const sessionData = {
-      [params.jti]: {
-        accessToken: params.accessToken,
-        refreshToken: params.refreshToken,
-        idToken: params.idToken
-      }
+    const sessionData: ICachedSession = {
+      jti: params.jti,
+      accessToken: params.accessToken,
+      refreshToken: params.refreshToken,
+      idToken: params.idToken
     };
 
-    const isDataExists = await this.cache.get(cacheKey);
+    const isSessionExists = await this.cache.get(cacheKey);
 
-    if (isDataExists) {
-      const sessions = JSON.parse(isDataExists);
+    if (isSessionExists) {
+      const sessions: ICachedSession[] = JSON.parse(isSessionExists);
 
       sessions.push(sessionData);
 
@@ -64,66 +70,76 @@ export class SessionService {
       await this.cache.set(cacheKey, JSON.stringify([sessionData]));
     }
 
-    return this.sessionRepo.create(session);
+    return savedSession;
   }
 
   async validate(jti: string): Promise<boolean> {
     const key = this.getRevokedCacheKey(jti);
-    const isDataExists = (await this.cache.get(key)) as unknown as number;
+    const isRevokedToken = (await this.cache.get(key)) as unknown as number;
 
-    if (isDataExists !== 0) {
+    if (isRevokedToken !== 0) {
       return true;
     }
     return false;
   }
 
-  async destroy(accessToken: string, refreshToken: string, userId: string) {
-    const accessTokenData = this.jwtService.decode(accessToken);
-    const refreshTokenData = this.jwtService.decode(refreshToken) as {
+  async destroy(jti: string, userId: string) {
+    const sessionsKey = this.getSessionCacheKey(userId);
+
+    const isSessionExists = await this.cache.get(sessionsKey);
+
+    if (!isSessionExists) {
+      return;
+    }
+
+    const sessions: ICachedSession[] = JSON.parse(isSessionExists || "[]");
+
+    const session = sessions.find((session) => session.jti === jti);
+
+    if (!session) {
+      return;
+    }
+
+    const { accessToken, refreshToken } = session;
+
+    const decodedRefreshToken = this.jwtService.decode(refreshToken) as {
       exp: number;
     };
-    const jti = accessTokenData.jti;
 
-    const cacheKey = userId;
-    const revokedKey = this.getRevokedCacheKey(accessTokenData.jti);
-
-    const isDataExists = await this.cache.get(cacheKey);
-
-    if (isDataExists) {
-      const sessions = JSON.parse(isDataExists)?.filter(
-        (data) => Object.keys(data)[0] !== jti
-      );
-      await this.cache.set(cacheKey, JSON.stringify(sessions));
-    }
     const nowInSeconds = Date.now() / 1000;
 
-    const ttl = Math.floor(refreshTokenData.exp - nowInSeconds);
+    const ttl = Math.floor(decodedRefreshToken.exp - nowInSeconds);
+
+    const revokedKey = this.getRevokedCacheKey(jti);
 
     await this.cache.set(
       revokedKey,
       JSON.stringify([accessToken, refreshToken]),
       ttl
     );
+
+    const liveSessions = sessions.filter((session) => session.jti !== jti);
+
+    if (liveSessions && liveSessions.length) {
+      await this.cache.set(sessionsKey, JSON.stringify(liveSessions));
+    }
   }
 
   async destroyAll(userId: string) {
     const sessionKey = this.getSessionCacheKey(userId);
-    const isSessionExists = await this.cache.get(sessionKey);
+    const areSessionsExists = await this.cache.get(sessionKey);
 
-    if (!isSessionExists) {
+    if (!areSessionsExists) {
       return false;
     }
 
-    const sessions = JSON.parse(isSessionExists);
+    const sessions: ICachedSession[] = JSON.parse(areSessionsExists);
 
-    sessions.forEach(async (session) => {
-      const jti = Object.keys(session)[0];
-      const revokedKey = this.getRevokedCacheKey(jti);
-      const body = {
-        ...session[jti]
-      };
-      await this.cache.set(revokedKey, JSON.stringify(body));
-    });
+    for (const session of sessions) {
+      this.destroy(session.jti, userId).catch((err) => {
+        console.log("cannot destroy session", err);
+      });
+    }
 
     await this.cache.delete(sessionKey);
   }

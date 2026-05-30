@@ -48,7 +48,7 @@ export class IssueTokensUseCase {
   }
 
   async execute(params: IIssueTokensParams): Promise<IssueTokenResponse> {
-    const { user, clientRequestInfo } = params;
+    const { user } = params;
 
     const accessTokenPayload = this.createAccessTokenPayload(user);
 

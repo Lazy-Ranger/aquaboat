@@ -13,9 +13,9 @@ export class LogoutUserUseCase {
   ): Promise<boolean> {
     void principal;
 
-    const { accessToken, refreshToken } = params;
+    const { jti, userId } = params;
 
-    await this.sessionService.destroy(accessToken, refreshToken, principal.id);
+    await this.sessionService.destroy(jti, userId);
 
     return true;
   }

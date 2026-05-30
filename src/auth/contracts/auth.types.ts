@@ -16,7 +16,13 @@ export interface ILoggedInResponse {
   refreshToken: string;
 }
 
-export interface IUserResponse extends ILoggedInResponse {
+export interface IssueTokenResponse {
+  accessToken: string;
+  idToken: string;
+  refreshToken: string;
   jti: string;
+}
+
+export interface ILoggedInUserResult extends IssueTokenResponse {
   user: IUser;
 }

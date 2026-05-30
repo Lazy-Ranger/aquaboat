@@ -1,11 +1,18 @@
 import { Injectable } from "@nestjs/common";
+import { IClientRequestInfo } from "src/common/interfaces";
+import { IUser } from "src/user/contracts";
 import {
   ILoggedInResponse,
   ISessionCreateParams,
+  IssueTokenResponse,
   IUserLoginParams,
   IUserRegisterParams
 } from "../../contracts";
-import { LoginUserUseCase, RegisterUserUseCase } from "../use-cases";
+import {
+  IssueTokensUseCase,
+  LoginUserUseCase,
+  RegisterUserUseCase
+} from "../use-cases";
 import { SessionService } from "./session.service";
 
 @Injectable()
@@ -13,51 +20,51 @@ export class AuthService {
   constructor(
     private readonly sessionService: SessionService,
     private readonly registerUserUC: RegisterUserUseCase,
-    private readonly loginUserUC: LoginUserUseCase
+    private readonly loginUserUC: LoginUserUseCase,
+    private readonly issueTokensUC: IssueTokensUseCase
   ) {}
 
   async register(params: IUserRegisterParams): Promise<ILoggedInResponse> {
-    const loggedInResponse = await this.registerUserUC.execute(params);
-    const sessionParams: ISessionCreateParams = {
-      userId: loggedInResponse.user.id,
-      jti: loggedInResponse.jti,
-      accessToken: loggedInResponse.accessToken,
-      refreshToken: loggedInResponse.refreshToken,
-      idToken: loggedInResponse.idToken,
-      ip: params.clientRequestInfo.ip,
-      userAgent: params.clientRequestInfo.userAgent,
-      email: loggedInResponse.user.email
-    };
+    const user = await this.registerUserUC.execute(params);
 
-    await this.sessionService.create(sessionParams);
+    const issuedTokens = await this.issueTokensUC.execute({
+      user
+    });
+
+    await this.createUserSession(user, issuedTokens, params.clientRequestInfo);
 
     return {
-      accessToken: loggedInResponse.accessToken,
-      idToken: loggedInResponse.idToken,
-      refreshToken: loggedInResponse.refreshToken
+      accessToken: issuedTokens.accessToken,
+      idToken: issuedTokens.idToken,
+      refreshToken: issuedTokens.refreshToken
     };
   }
 
   async login(params: IUserLoginParams): Promise<ILoggedInResponse> {
-    const loggedInResponse = await this.loginUserUC.execute(params);
+    const { user, ...issuedTokens } = await this.loginUserUC.execute(params);
 
+    await this.createUserSession(user, issuedTokens, params.clientRequestInfo);
+
+    return {
+      accessToken: issuedTokens.accessToken,
+      idToken: issuedTokens.idToken,
+      refreshToken: issuedTokens.refreshToken
+    };
+  }
+
+  private async createUserSession(
+    user: IUser,
+    issuedTokens: IssueTokenResponse,
+    clientRequestInfo: IClientRequestInfo
+  ) {
     const sessionParams: ISessionCreateParams = {
-      userId: loggedInResponse.user.id,
-      jti: loggedInResponse.jti,
-      accessToken: loggedInResponse.accessToken,
-      refreshToken: loggedInResponse.refreshToken,
-      idToken: loggedInResponse.idToken,
-      ip: params.clientRequestInfo.ip,
-      userAgent: params.clientRequestInfo.userAgent,
-      email: loggedInResponse.user.email
+      ...issuedTokens,
+      userId: user.id,
+      ip: clientRequestInfo.ip,
+      userAgent: clientRequestInfo.userAgent,
+      email: user.email
     };
 
     await this.sessionService.create(sessionParams);
-
-    return {
-      accessToken: loggedInResponse.accessToken,
-      idToken: loggedInResponse.idToken,
-      refreshToken: loggedInResponse.refreshToken
-    };
   }
 }

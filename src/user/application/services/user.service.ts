@@ -10,6 +10,15 @@ export class UserService {
     private readonly createUserUseCase: CreateUserUseCase
   ) {}
 
+  async findById(id: string): Promise<IUser | null> {
+    const user = await this.retrieveUserUseCase.execute({
+      by: RetrieveUserBy.ID,
+      value: id
+    });
+
+    return UserMapper.toDto(user);
+  }
+
   async findByEmail(email: string): Promise<IUser | null> {
     try {
       const user = await this.retrieveUserUseCase.execute({

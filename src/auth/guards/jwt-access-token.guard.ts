@@ -27,18 +27,18 @@ export class JwtAccessTokenGuard extends AuthGuard(Strategy.JWT_ACCESS_TOKEN) {
     const request = context.switchToHttp().getRequest<Request>();
     const userAccessTokenClaim = request.user as Record<string, string>;
 
-    const jti = `revoked_${userAccessTokenClaim?.jti}`;
+    const isTokenRevoked = await this.sessionService.validate(
+      userAccessTokenClaim.jti
+    );
 
-    const isTokenRevoked = await this.cache.exists(jti);
-
-    if (isTokenRevoked !== 0) {
+    if (isTokenRevoked) {
       throw new UnauthorizedException(
         new UnauthorizedError("Token is expired")
       );
     }
 
     request.user = {
-      id: userAccessTokenClaim.email,
+      id: userAccessTokenClaim.sub,
       claim: userAccessTokenClaim
     };
 

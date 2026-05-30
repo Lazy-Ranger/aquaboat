@@ -3,22 +3,11 @@ import { IUser, Provider } from "src/user/contracts";
 import { ILoginUserRequest, IRegisterUserRequest } from "./auth.types";
 
 export interface IRefreshTokenParams {
-  refreshToken: string;
-
-  clientRequestInfo: IClientRequestInfo;
+  jti: string;
 }
 
 export interface IIssueTokensParams {
   user: IUser;
-
-  clientRequestInfo: IClientRequestInfo;
-}
-
-export interface IssueTokenResponse {
-  accessToken: string;
-  idToken: string;
-  refreshToken: string;
-  jti: string;
 }
 
 export interface IUserRegisterParams extends IRegisterUserRequest {
@@ -32,6 +21,8 @@ export interface IUserLoginParams extends ILoginUserRequest {
 }
 
 export interface IUserLogoutParams {
-  accessToken: string;
-  refreshToken: string;
+  jti: string;
+  userId: string;
 }
+
+export type IUserLogoutAllDeviceParams = IUserLogoutParams;

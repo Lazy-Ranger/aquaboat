@@ -9,8 +9,6 @@ import {
   UseGuards,
   UseInterceptors
 } from "@nestjs/common";
-import { ExtractJwt } from "passport-jwt";
-import { RefreshTokenService } from "src/auth/application/services/refresh-token.service";
 import { IRefreshTokenParams, IUserLoginParams } from "src/auth/contracts";
 import { Principal } from "src/common/decorators";
 import { IHttpRequest, IPrincipal } from "src/common/interfaces";
@@ -18,11 +16,9 @@ import { Provider } from "../../../../user/contracts";
 import { UserNotFoundError } from "../../../../user/errors";
 import { AuthService } from "../../../application/services/auth.service";
 import {
-  LoginUserUseCase,
   LogoutUserAllDeviceUseCase,
   LogoutUserUseCase,
-  RefreshTokensUseCase,
-  RegisterUserUseCase
+  RefreshTokensUseCase
 } from "../../../application/use-cases";
 import { UnauthorizedError, UserAlreadyRegisteredError } from "../../../errors";
 import { JwtAccessTokenGuard } from "../../../guards/jwt-access-token.guard";
@@ -35,11 +31,8 @@ import { LoginUserDto, RegisterUserDto } from "../dtos";
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly registerUserUseCase: RegisterUserUseCase,
-    private readonly loginUserUseCase: LoginUserUseCase,
     private readonly logoutUserUseCase: LogoutUserUseCase,
     private readonly refreshTokenUC: RefreshTokensUseCase,
-    private readonly refreshTokenService: RefreshTokenService,
     private readonly logoutUserAllDevice: LogoutUserAllDeviceUseCase
   ) {}
 
@@ -89,17 +82,11 @@ export class AuthController {
   @Post("/logout")
   @UseInterceptors(ClearRefreshTokenInterceptor)
   @UseGuards(JwtAccessTokenGuard)
-  logout(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
-    const accessToken = ExtractJwt.fromAuthHeaderAsBearerToken()(req) as string;
-
-    const refreshToken = this.refreshTokenService.extractFromCookie(
-      req
-    ) as string;
-
+  logout(@Principal() principal: IPrincipal) {
     try {
       return this.logoutUserUseCase.execute(principal, {
-        accessToken,
-        refreshToken
+        jti: principal.claim.jti,
+        userId: principal.id
       });
     } catch (err) {
       throw err;
@@ -109,9 +96,12 @@ export class AuthController {
   @Post("/logout-all")
   @UseInterceptors(ClearRefreshTokenInterceptor)
   @UseGuards(JwtAccessTokenGuard)
-  logoutAll(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
+  logoutAll(@Principal() principal: IPrincipal) {
     try {
-      return this.logoutUserAllDevice.execute(principal.id);
+      return this.logoutUserAllDevice.execute(principal, {
+        jti: principal.claim.jti,
+        userId: principal.id
+      });
     } catch (err) {
       throw err;
     }
@@ -121,13 +111,8 @@ export class AuthController {
   @UseGuards(JwtRefreshTokenGuard)
   @UseInterceptors(SetRefreshTokenInterceptor)
   async refresh(@Req() req: IHttpRequest, @Principal() principal: IPrincipal) {
-    const refreshToken = this.refreshTokenService.extractFromCookie(
-      req
-    ) as string;
-
     const refreshTokenParams: IRefreshTokenParams = {
-      refreshToken,
-      clientRequestInfo: req.clientRequestInfo
+      jti: principal.claim.jti
     };
 
     try {

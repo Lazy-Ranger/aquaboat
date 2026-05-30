@@ -7,6 +7,7 @@ import { ICacheService } from "src/application/ports/cache.port";
 import { CACHE_SERVICE } from "src/tokens";
 import { AppConfig } from "../../../config/app.config";
 import { JwtConfig } from "../../../config/jwt.config";
+import { SessionService } from "./session.service";
 
 @Injectable()
 export class RefreshTokenService {
@@ -16,7 +17,8 @@ export class RefreshTokenService {
 
   constructor(
     private readonly config: ConfigService<AppConfig & JwtConfig>,
-    @Inject(CACHE_SERVICE) private readonly cache: ICacheService
+    @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+    private readonly sessionService: SessionService
   ) {
     const refreshTokenExpireTime = this.config.getOrThrow<StringValue>(
       "jwt.refreshTokenExpireTime"
@@ -35,14 +37,12 @@ export class RefreshTokenService {
     );
   }
 
-  public async isTokenRevoked(refreshToken: string) {
-    if (!refreshToken) {
+  public async isTokenRevoked(jti: string) {
+    if (!jti) {
       return true;
     }
 
-    const isTokenRevoked = await this.cache.exists(refreshToken);
-
-    return isTokenRevoked !== 0;
+    return await this.sessionService.validate(jti);
   }
 
   public setRefreshToken(refreshToken: string, response: Response) {
